@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import {
   Search,
@@ -62,7 +62,7 @@ export default function SearchMovies() {
     queryKey: ["search", debouncedQuery, page],
     queryFn: () => searchMovies(debouncedQuery, page),
     enabled: showSearch,
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
   });
 
   const {
@@ -72,7 +72,7 @@ export default function SearchMovies() {
     queryKey: ["discover", activeGenre, page],
     queryFn: () => discoverByGenre(activeGenre, page),
     enabled: showGenreDiscover,
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
   });
 
   const { data: featured, isLoading: featuredLoading } = useQuery({
@@ -97,6 +97,7 @@ export default function SearchMovies() {
   };
 
   const handleGenreClick = (genreId) => {
+    if (query.length > 0) setQuery("");
     setActiveGenre((prev) => (prev === genreId ? null : genreId));
     setPage(1);
   };
@@ -162,21 +163,30 @@ export default function SearchMovies() {
 
           {/* Genre chips */}
           {genres && (
-            <div className="flex flex-wrap gap-2 mt-4 justify-center">
-              {Object.entries(genres).map(([id, name]) => (
-                <button
-                  key={id}
-                  onClick={() => handleGenreClick(Number(id))}
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-                    activeGenre === Number(id)
-                      ? "bg-primary text-primary-foreground border-primary"
-                      : "bg-transparent text-muted-foreground border-border hover:text-foreground hover:border-foreground/30"
-                  }`}
-                >
-                  {name}
-                </button>
-              ))}
-            </div>
+            <>
+              <div className="flex flex-wrap gap-2 mt-4 justify-center">
+                {Object.entries(genres).map(([id, name]) => (
+                  <button
+                    key={id}
+                    onClick={() => handleGenreClick(Number(id))}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+                      showSearch
+                        ? "opacity-40 cursor-pointer"
+                        : activeGenre === Number(id)
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "bg-transparent text-muted-foreground border-border hover:text-foreground hover:border-foreground/30"
+                    }`}
+                  >
+                    {name}
+                  </button>
+                ))}
+              </div>
+              {showSearch && (
+                <p className="text-center text-xs text-muted-foreground/50 mt-2">
+                  Genre filter applies when search is empty
+                </p>
+              )}
+            </>
           )}
         </motion.div>
 
