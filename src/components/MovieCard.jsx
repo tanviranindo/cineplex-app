@@ -20,7 +20,7 @@ import { posterUrl } from "../services/tmdb";
 const PLACEHOLDER =
   "https://via.placeholder.com/300x450/1a1a2e/8b5cf6?text=No+Poster";
 
-export default function MovieCard({ movie, index = 0, showRemove = false }) {
+export default function MovieCard({ movie, index = 0, showRemove = false, addedAt }) {
   const [removeOpen, setRemoveOpen] = useState(false);
   const reducedMotion = useReducedMotion();
   const user = useAuthStore((s) => s.user);
@@ -105,6 +105,12 @@ export default function MovieCard({ movie, index = 0, showRemove = false }) {
               <h3 className="font-semibold text-sm leading-snug line-clamp-2 group-hover:text-primary transition-colors duration-300">
                 {title}
               </h3>
+
+              {addedAt && (
+                <p className="text-[10px] text-muted-foreground/60">
+                  Added {new Intl.DateTimeFormat("en-US", { month: "short", year: "numeric" }).format(new Date(addedAt))}
+                </p>
+              )}
 
               <div
                 className="flex gap-2"
