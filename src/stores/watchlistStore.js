@@ -25,7 +25,9 @@ export const useWatchlistStore = create((set, get) => ({
       set({ items: [] });
       return;
     }
-    set({ items: loadItems(userId) });
+    const loaded = loadItems(userId);
+    const backfilled = loaded.map((m) => ({ status: "to_watch", ...m }));
+    set({ items: backfilled });
   },
 
   add: (movie, userId) => {
@@ -39,6 +41,7 @@ export const useWatchlistStore = create((set, get) => ({
         release_date: movie.release_date,
         vote_average: movie.vote_average,
         addedAt: Date.now(),
+        status: "to_watch",
       },
       ...items,
     ];
@@ -55,5 +58,17 @@ export const useWatchlistStore = create((set, get) => ({
 
   isInList: (movieId) => {
     return get().items.some((m) => m.id === movieId);
+  },
+
+  setStatus: (movieId, userId, status) => {
+    const { items } = get();
+    const next = items.map((m) => m.id === movieId ? { ...m, status } : m);
+    persist(userId, next);
+    set({ items: next });
+  },
+
+  getItemStatus: (movieId) => {
+    const item = get().items.find((m) => m.id === movieId);
+    return item?.status ?? null;
   },
 }));
