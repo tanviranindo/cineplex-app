@@ -1,12 +1,13 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { toast } from 'sonner'
 import { useNavigate } from 'react-router-dom'
 import { User, Lock, Trash2, AlertTriangle } from 'lucide-react'
 import { Button } from '../components/ui/button'
 import { Input } from '../components/ui/input'
+import PasswordInput from '../components/PasswordInput'
 import {
   Dialog,
   DialogContent,
@@ -35,11 +36,16 @@ export default function Account() {
   const {
     register: regName,
     handleSubmit: handleNameSubmit,
+    reset: resetName,
     formState: { errors: nameErrors, isSubmitting: nameSubmitting },
   } = useForm({
     resolver: zodResolver(changeDisplayNameSchema),
     defaultValues: { name: user?.name ?? '' },
   })
+
+  useEffect(() => {
+    resetName({ name: user?.name ?? '' })
+  }, [user?.name])
 
   // Password form
   const {
@@ -112,7 +118,7 @@ export default function Account() {
   // Avatar: photoURL or initials
   const initials = user?.name
     ? user.name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)
-    : '?'
+    : user?.email?.[0]?.toUpperCase() ?? '?'
 
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-8">
@@ -168,11 +174,11 @@ export default function Account() {
         ) : (
           <form onSubmit={handlePwdSubmit(onPwdSubmit)} className="space-y-3">
             <div>
-              <Input type="password" placeholder="Current password" {...regPwd('currentPassword')} />
+              <PasswordInput placeholder="Current password" {...regPwd('currentPassword')} />
               {pwdErrors.currentPassword && <p className="text-destructive text-xs mt-1">{pwdErrors.currentPassword.message}</p>}
             </div>
             <div>
-              <Input type="password" placeholder="New password" {...regPwd('newPassword')} />
+              <PasswordInput placeholder="New password" {...regPwd('newPassword')} />
               {pwdErrors.newPassword && <p className="text-destructive text-xs mt-1">{pwdErrors.newPassword.message}</p>}
               {newPwd.length > 0 && (
                 <div className="mt-2">
@@ -186,7 +192,7 @@ export default function Account() {
               )}
             </div>
             <div>
-              <Input type="password" placeholder="Confirm new password" {...regPwd('confirmNewPassword')} />
+              <PasswordInput placeholder="Confirm new password" {...regPwd('confirmNewPassword')} />
               {pwdErrors.confirmNewPassword && <p className="text-destructive text-xs mt-1">{pwdErrors.confirmNewPassword.message}</p>}
             </div>
             <Button type="submit" size="sm" disabled={pwdSubmitting}>
@@ -237,7 +243,7 @@ export default function Account() {
             <form onSubmit={handleDeleteSubmit(onDeleteSubmit)} className="space-y-4">
               <div>
                 <label className="text-sm font-medium mb-1 block">Enter your password to confirm</label>
-                <Input type="password" placeholder="Current password" {...regDelete('currentPassword')} />
+                <PasswordInput placeholder="Current password" {...regDelete('currentPassword')} />
                 {deleteErrors.currentPassword && <p className="text-destructive text-xs mt-1">{deleteErrors.currentPassword.message}</p>}
               </div>
               <DialogFooter>

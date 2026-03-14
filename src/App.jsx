@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Layout from "./components/Layout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PageSkeleton from "./components/PageSkeleton";
+import LoginModal from "./components/LoginModal";
 import { useAuthStore } from "./stores/authStore";
 import { useWatchlistStore } from "./stores/watchlistStore";
 import { useThemeStore } from "./stores/themeStore";
@@ -68,6 +69,7 @@ export default function App() {
           </Route>
         </Routes>
       </Suspense>
+      <LoginModal />
     </BrowserRouter>
   );
 }

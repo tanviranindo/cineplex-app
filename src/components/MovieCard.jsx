@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { motion, useReducedMotion } from "framer-motion";
-import { Star, Plus, Check, Trash2, Eye, Bookmark, CheckCircle, Heart } from "lucide-react";
+import { Star, Plus, Check, Trash2, Eye, Bookmark, CheckCircle, Heart, Film } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
@@ -21,24 +21,23 @@ import {
 } from "./ui/dropdown-menu";
 import { useAuthStore } from "../stores/authStore";
 import { useWatchlistStore } from "../stores/watchlistStore";
+import { useLoginModalStore } from "../stores/loginModalStore";
 import { posterUrl, getMovieById } from "../services/tmdb";
 import { queryClient } from "../lib/queryClient";
 import { queryKeys } from "../lib/queryKeys";
-
-const PLACEHOLDER =
-  "https://via.placeholder.com/300x450/1a1a2e/8b5cf6?text=No+Poster";
 
 export default function MovieCard({ movie, index = 0, showRemove = false, addedAt }) {
   const [removeOpen, setRemoveOpen] = useState(false);
   const reducedMotion = useReducedMotion();
   const user = useAuthStore((s) => s.user);
   const add = useWatchlistStore((s) => s.add);
+  const openLoginModal = useLoginModalStore((s) => s.open);
   const remove = useWatchlistStore((s) => s.remove);
   const isInList = useWatchlistStore((s) => s.isInList(movie.id));
   const setStatus = useWatchlistStore((s) => s.setStatus);
   const currentStatus = useWatchlistStore((s) => s.items.find((m) => m.id === movie.id)?.status ?? null);
 
-  const poster = posterUrl(movie.poster_path) || PLACEHOLDER;
+  const hasPoster = !!movie.poster_path;
   const title = movie.title || movie.Title || "Untitled";
   const year = (movie.release_date || movie.Year || "").slice(0, 4);
   const rating = movie.vote_average ? movie.vote_average.toFixed(1) : null;
@@ -76,7 +75,7 @@ export default function MovieCard({ movie, index = 0, showRemove = false, addedA
     e.preventDefault();
     e.stopPropagation();
     if (!user) {
-      toast.error("Please sign in to add movies to your watchlist");
+      openLoginModal(watchlistItem);
       return;
     }
     try {
@@ -109,14 +108,22 @@ export default function MovieCard({ movie, index = 0, showRemove = false, addedA
         <Link to={`/movie/${movieId}`} className="block group" onMouseEnter={handleMouseEnter}>
           <div className="card-glow rounded-xl overflow-hidden glass">
             <div className="relative aspect-[2/3] overflow-hidden">
-              <img
-                src={poster}
-                alt={title}
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                loading="lazy"
-              />
+              {hasPoster ? (
+                <img
+                  src={posterUrl(movie.poster_path)}
+                  alt={title}
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  loading="lazy"
+                  onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.nextSibling?.classList.remove('hidden') }}
+                />
+              ) : null}
+              <div className={`${hasPoster ? 'hidden' : ''} absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-muted to-muted/50 gap-3`}>
+                <Film className="h-10 w-10 text-muted-foreground/40" />
+                <p className="text-xs text-muted-foreground/60 text-center px-3 leading-tight">{title}</p>
+              </div>
 
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              {/* Subtle always-present bottom gradient for readability */}
+              <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/30 to-transparent pointer-events-none" />
 
               {year && (
                 <Badge className="absolute top-3 right-3 glass text-xs font-medium text-white border-white/20">
@@ -131,8 +138,8 @@ export default function MovieCard({ movie, index = 0, showRemove = false, addedA
                 </Badge>
               )}
 
-              <div className="absolute inset-x-0 bottom-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-500">
-                <div className="flex items-center justify-center gap-2 text-white text-sm font-medium">
+              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                <div className="flex items-center gap-2 text-white text-sm font-semibold bg-black/40 backdrop-blur-sm px-4 py-2 rounded-full border border-white/20">
                   <Eye className="h-4 w-4" />
                   View Details
                 </div>
@@ -140,7 +147,7 @@ export default function MovieCard({ movie, index = 0, showRemove = false, addedA
             </div>
 
             <div className="p-4 space-y-3">
-              <h3 className="font-semibold text-sm leading-snug line-clamp-2 group-hover:text-primary transition-colors duration-300">
+              <h3 className="font-semibold text-sm leading-snug line-clamp-2 min-h-[2.5rem] group-hover:text-primary transition-colors duration-300">
                 {title}
               </h3>
 

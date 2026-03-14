@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Film,
@@ -14,7 +14,16 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "./ui/button";
-import { Switch } from "./ui/switch";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
+} from "./ui/dropdown-menu";
 import { useAuthStore } from "../stores/authStore";
 import { useThemeStore } from "../stores/themeStore";
 
@@ -25,6 +34,8 @@ export default function Navbar() {
   const theme = useThemeStore((s) => s.theme);
   const toggle = useThemeStore((s) => s.toggle);
   const navigate = useNavigate();
+  const location = useLocation();
+  const isLoginPage = location.pathname === "/login";
 
   const initials = user?.name
     ? user.name
@@ -78,47 +89,94 @@ export default function Navbar() {
 
           {/* Right side */}
           <div className="hidden md:flex items-center gap-3">
-            {/* Theme toggle */}
-            <div className="flex items-center gap-2">
-              <Sun className="h-4 w-4 text-muted-foreground" />
-              <Switch
-                checked={theme === "dark"}
-                onCheckedChange={toggle}
-                aria-label="Toggle theme"
-              />
-              <Moon className="h-4 w-4 text-muted-foreground" />
-            </div>
+            {/* Animated pill theme toggle */}
+            <button
+              onClick={toggle}
+              className="relative flex items-center w-14 h-7 rounded-full bg-muted border border-border transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              aria-label="Toggle theme"
+            >
+              <motion.div
+                className="absolute w-5 h-5 rounded-full bg-background shadow-sm flex items-center justify-center"
+                animate={{ x: theme === "dark" ? 30 : 4 }}
+                transition={{ type: "spring", stiffness: 500, damping: 30 }}
+              >
+                {theme === "dark" ? (
+                  <Moon className="h-3 w-3 text-primary" />
+                ) : (
+                  <Sun className="h-3 w-3 text-amber-500" />
+                )}
+              </motion.div>
+            </button>
 
             {user ? (
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-cyan-400 flex items-center justify-center shrink-0">
-                    <span className="text-[11px] font-bold text-white">{initials}</span>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="flex items-center gap-2 focus:outline-none group">
+                    {user.photoURL ? (
+                      <img
+                        src={user.photoURL}
+                        alt={user.name ?? ""}
+                        className="w-8 h-8 rounded-full object-cover ring-2 ring-transparent group-hover:ring-primary/50 transition-all"
+                      />
+                    ) : (
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-cyan-400 flex items-center justify-center shrink-0 ring-2 ring-transparent group-hover:ring-primary/50 transition-all">
+                        <span className="text-[11px] font-bold text-white">{initials}</span>
+                      </div>
+                    )}
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <div className="px-3 py-2">
+                    <p className="text-sm font-medium truncate">{user.name ?? "No name set"}</p>
+                    <p className="text-xs text-muted-foreground truncate">{user.email}</p>
                   </div>
-                  <span className="text-sm text-muted-foreground">
-                    {user.name}
-                  </span>
-                </div>
-                <Button variant="ghost" size="sm" asChild className="text-muted-foreground hover:text-foreground">
-                  <Link to="/account" className="flex items-center gap-2">
-                    <Settings className="h-4 w-4" />
-                    Account
-                  </Link>
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleLogout}
-                  className="text-muted-foreground hover:text-foreground"
-                >
-                  <LogOut className="h-4 w-4 mr-1" />
-                  Sign Out
-                </Button>
-              </div>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link to="/account" className="flex items-center gap-2 cursor-pointer">
+                      <Settings className="h-4 w-4" />
+                      Account Settings
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSub>
+                    <DropdownMenuSubTrigger className="flex items-center gap-2">
+                      {theme === "dark" ? (
+                        <Moon className="h-4 w-4" />
+                      ) : (
+                        <Sun className="h-4 w-4" />
+                      )}
+                      Theme
+                    </DropdownMenuSubTrigger>
+                    <DropdownMenuSubContent>
+                      <DropdownMenuItem
+                        onClick={() => { if (theme !== "light") toggle(); }}
+                        className={theme === "light" ? "bg-accent" : ""}
+                      >
+                        <Sun className="h-4 w-4 mr-2" /> Light
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => { if (theme !== "dark") toggle(); }}
+                        className={theme === "dark" ? "bg-accent" : ""}
+                      >
+                        <Moon className="h-4 w-4 mr-2" /> Dark
+                      </DropdownMenuItem>
+                    </DropdownMenuSubContent>
+                  </DropdownMenuSub>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={handleLogout}
+                    className="text-destructive focus:text-destructive cursor-pointer"
+                  >
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             ) : (
-              <Button size="sm" asChild>
-                <Link to="/login">Sign In</Link>
-              </Button>
+              !isLoginPage && (
+                <Button size="sm" asChild>
+                  <Link to="/login">Sign In</Link>
+                </Button>
+              )
             )}
           </div>
 
@@ -148,23 +206,45 @@ export default function Navbar() {
             className="md:hidden overflow-hidden glass border-t border-white/10"
           >
             <div className="px-4 py-4 space-y-3">
+              {/* Mobile theme toggle */}
               <div className="flex items-center gap-2 px-3 py-2">
-                <Sun className="h-4 w-4 text-muted-foreground" />
-                <Switch
-                  checked={theme === "dark"}
-                  onCheckedChange={toggle}
-                  aria-label="Toggle theme"
-                />
-                <Moon className="h-4 w-4 text-muted-foreground" />
+                <button
+                  onClick={() => { if (theme !== "light") toggle(); setMobileOpen(false); }}
+                  className={`flex items-center gap-2 text-sm px-2 py-1 rounded-lg ${
+                    theme === "light"
+                      ? "bg-accent text-foreground"
+                      : "text-muted-foreground"
+                  }`}
+                >
+                  <Sun className="h-4 w-4" /> Light
+                </button>
+                <button
+                  onClick={() => { if (theme !== "dark") toggle(); setMobileOpen(false); }}
+                  className={`flex items-center gap-2 text-sm px-2 py-1 rounded-lg ${
+                    theme === "dark"
+                      ? "bg-accent text-foreground"
+                      : "text-muted-foreground"
+                  }`}
+                >
+                  <Moon className="h-4 w-4" /> Dark
+                </button>
               </div>
 
               <div className="border-t border-white/10 pt-3">
                 {user ? (
                   <div className="space-y-2">
                     <div className="flex items-center gap-2 px-3">
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-cyan-400 flex items-center justify-center shrink-0">
-                        <span className="text-[11px] font-bold text-white">{initials}</span>
-                      </div>
+                      {user.photoURL ? (
+                        <img
+                          src={user.photoURL}
+                          alt={user.name ?? ""}
+                          className="w-8 h-8 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-cyan-400 flex items-center justify-center shrink-0">
+                          <span className="text-[11px] font-bold text-white">{initials}</span>
+                        </div>
+                      )}
                       <p className="text-sm text-muted-foreground">{user.name}</p>
                     </div>
                     <Link
@@ -184,15 +264,17 @@ export default function Navbar() {
                     </button>
                   </div>
                 ) : (
-                  <Link
-                    to="/login"
-                    onClick={() => setMobileOpen(false)}
-                    className="block"
-                  >
-                    <Button className="w-full" size="sm">
-                      Sign In
-                    </Button>
-                  </Link>
+                  !isLoginPage && (
+                    <Link
+                      to="/login"
+                      onClick={() => setMobileOpen(false)}
+                      className="block"
+                    >
+                      <Button className="w-full" size="sm">
+                        Sign In
+                      </Button>
+                    </Link>
+                  )
                 )}
               </div>
             </div>
