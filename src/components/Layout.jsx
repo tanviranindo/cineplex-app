@@ -1,6 +1,7 @@
 import { Outlet } from "react-router-dom";
 import ScrollToTop from "./ScrollToTop";
 import Navbar from "./Navbar";
+import ErrorBoundary from "./ErrorBoundary";
 import { Film } from "lucide-react";
 
 export default function Layout() {
@@ -9,7 +10,9 @@ export default function Layout() {
       <ScrollToTop />
       <Navbar />
       <main className="flex-1">
-        <Outlet />
+        <ErrorBoundary>
+          <Outlet />
+        </ErrorBoundary>
       </main>
       <footer className="border-t border-border/50 py-8 mt-auto">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
