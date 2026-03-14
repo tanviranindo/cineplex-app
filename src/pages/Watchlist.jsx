@@ -1,0 +1,92 @@
+import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
+import { Film, Plus, Search } from "lucide-react";
+import { Button } from "../components/ui/button";
+import { Badge } from "../components/ui/badge";
+import MovieCard from "../components/MovieCard";
+import { useWatchlistStore } from "../stores/watchlistStore";
+
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.05 },
+  },
+};
+
+export default function Watchlist() {
+  const items = useWatchlistStore((s) => s.items);
+
+  if (items.length === 0) {
+    return (
+      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center max-w-md"
+        >
+          <div className="mx-auto mb-6 w-20 h-20 rounded-2xl bg-muted/50 flex items-center justify-center">
+            <Film className="h-10 w-10 text-muted-foreground/50" />
+          </div>
+          <h2 className="text-2xl font-bold mb-2">Your watchlist is empty</h2>
+          <p className="text-muted-foreground mb-8">
+            Start adding movies to keep track of what you want to watch next.
+          </p>
+          <Button size="lg" className="rounded-full" asChild>
+            <Link to="/search">
+              <Search className="h-4 w-4 mr-2" />
+              Browse Movies
+            </Link>
+          </Button>
+        </motion.div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative min-h-[calc(100vh-4rem)]">
+      <div className="ambient-orb w-80 h-80 bg-violet-500/10 -top-20 -right-40 animate-float" />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8"
+        >
+          <div className="flex items-center gap-3">
+            <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
+              My Watchlist
+            </h1>
+            <Badge variant="secondary" className="text-sm">
+              {items.length} movie{items.length !== 1 ? "s" : ""}
+            </Badge>
+          </div>
+          <Button variant="outline" className="rounded-full w-fit" asChild>
+            <Link to="/search">
+              <Plus className="h-4 w-4 mr-2" />
+              Add More
+            </Link>
+          </Button>
+        </motion.div>
+
+        {/* Grid */}
+        <motion.div
+          variants={container}
+          initial="hidden"
+          animate="show"
+          className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6"
+        >
+          {items.map((movie, i) => (
+            <MovieCard
+              key={movie.imdbID}
+              movie={movie}
+              index={i}
+              showRemove
+            />
+          ))}
+        </motion.div>
+      </div>
+    </div>
+  );
+}
