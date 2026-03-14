@@ -1,6 +1,7 @@
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
+import { useState } from "react";
 import {
   ArrowLeft,
   Star,
@@ -8,14 +9,17 @@ import {
   Calendar,
   Film,
   Plus,
-  Check,
+  Play,
   Trash2,
   Search,
-  DollarSign,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+} from "../components/ui/dialog";
 import MovieDetailSkeleton from "../components/MovieDetailSkeleton";
 import { getMovieById, posterUrl, backdropUrl } from "../services/tmdb";
 import { usePageTitle } from "../hooks/usePageTitle";
@@ -28,6 +32,7 @@ const PLACEHOLDER =
 export default function MovieDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [trailerOpen, setTrailerOpen] = useState(false);
   const user = useAuthStore((s) => s.user);
   const add = useWatchlistStore((s) => s.add);
   const remove = useWatchlistStore((s) => s.remove);
@@ -81,6 +86,9 @@ export default function MovieDetail() {
   const poster = posterUrl(movie.poster_path) || PLACEHOLDER;
   const backdrop = backdropUrl(movie.backdrop_path);
   const genres = movie.genres || [];
+  const trailer = movie.videos?.results?.find(
+    (v) => v.type === "Trailer" && v.site === "YouTube"
+  );
   const year = movie.release_date?.slice(0, 4);
   const runtime = movie.runtime ? `${Math.floor(movie.runtime / 60)}h ${movie.runtime % 60}m` : null;
   const revenue = movie.revenue ? `$${(movie.revenue / 1_000_000).toFixed(0)}M` : null;
@@ -274,6 +282,12 @@ export default function MovieDetail() {
                   </Button>
                 )
               )}
+              {trailer && (
+                <Button variant="outline" onClick={() => setTrailerOpen(true)}>
+                  <Play className="h-4 w-4 mr-2" />
+                  Watch Trailer
+                </Button>
+              )}
               <Button variant="outline" asChild>
                 <Link to="/search">
                   <Search className="h-4 w-4 mr-2" />
@@ -284,6 +298,22 @@ export default function MovieDetail() {
           </motion.div>
         </div>
       </div>
+
+      {trailer && (
+        <Dialog open={trailerOpen} onOpenChange={setTrailerOpen}>
+          <DialogContent className="max-w-3xl p-0 overflow-hidden">
+            <div className="aspect-video">
+              <iframe
+                src={`https://www.youtube.com/embed/${trailer.key}?autoplay=1`}
+                className="w-full h-full"
+                allow="autoplay; encrypted-media"
+                allowFullScreen
+                title={`${movie.title} Trailer`}
+              />
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }
