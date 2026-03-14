@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import {
@@ -32,6 +32,23 @@ export default function SearchMovies() {
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
   const [activeGenre, setActiveGenre] = useState(null);
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    const handleKey = (e) => {
+      if (e.key === "/" && document.activeElement?.tagName !== "INPUT") {
+        e.preventDefault();
+        inputRef.current?.focus();
+      }
+      if (e.key === "Escape") {
+        setQuery("");
+        setPage(1);
+        inputRef.current?.blur();
+      }
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, []);
   const debouncedQuery = useDebounce(query, 400);
 
   const showSearch = debouncedQuery.trim().length >= 2;
@@ -115,6 +132,7 @@ export default function SearchMovies() {
           <div className="relative search-glow rounded-xl">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
             <Input
+              ref={inputRef}
               type="text"
               placeholder="Search movies by title..."
               value={query}
@@ -133,6 +151,14 @@ export default function SearchMovies() {
               </button>
             )}
           </div>
+
+          <p className="text-center text-xs text-muted-foreground/50 mt-2">
+            Press{" "}
+            <kbd className="px-1.5 py-0.5 rounded bg-muted text-muted-foreground text-[10px] font-mono">
+              /
+            </kbd>{" "}
+            to search
+          </p>
 
           {/* Genre chips */}
           {genres && (
