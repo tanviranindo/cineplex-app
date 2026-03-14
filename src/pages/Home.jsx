@@ -22,14 +22,14 @@ const features = [
   {
     icon: Search,
     title: "Search Movies",
-    description: "Browse over 500,000 movies from the OMDb database with instant search.",
+    description: "Browse millions of movies and TV shows from the TMDB database with instant search.",
     gradient: "from-violet-500 to-purple-600",
     glow: "shadow-violet-500/20",
   },
   {
     icon: Star,
     title: "View Ratings",
-    description: "See IMDb ratings, Rotten Tomatoes scores, and Metacritic ratings.",
+    description: "See TMDB community ratings, vote counts, and detailed movie statistics.",
     gradient: "from-amber-500 to-orange-600",
     glow: "shadow-amber-500/20",
   },
@@ -66,7 +66,7 @@ export default function Home() {
             <motion.div variants={item} className="flex justify-center mb-8">
               <div className="glass rounded-full px-4 py-2 flex items-center gap-2 text-sm text-muted-foreground">
                 <TrendingUp className="h-4 w-4 text-primary" />
-                <span>Discover 500,000+ movies</span>
+                <span>Discover millions of movies</span>
               </div>
             </motion.div>
 

@@ -81,7 +81,7 @@ export default function Watchlist() {
         >
           {items.map((movie, i) => (
             <MovieCard
-              key={movie.imdbID}
+              key={movie.id}
               movie={movie}
               index={i}
               showRemove

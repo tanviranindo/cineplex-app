@@ -31,7 +31,7 @@ export default function MovieCard({ movie, index = 0, showRemove = false }) {
   const title = movie.title || movie.Title || "Untitled";
   const year = (movie.release_date || movie.Year || "").slice(0, 4);
   const rating = movie.vote_average ? movie.vote_average.toFixed(1) : null;
-  const movieId = movie.id || movie.tmdbId;
+  const movieId = movie.id;
 
   const watchlistItem = {
     id: movieId,
