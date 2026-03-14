@@ -21,7 +21,7 @@ export default function Layout() {
               <span className="text-lg font-bold gradient-text">Cineplex</span>
             </div>
             <p className="text-sm text-muted-foreground text-center">
-              Your personal movie watchlist. Powered by OMDb API.
+              Your personal movie watchlist. Powered by TMDB API.
             </p>
             <p className="text-xs text-muted-foreground/60">
               &copy; {new Date().getFullYear()} Cineplex. All rights reserved.
