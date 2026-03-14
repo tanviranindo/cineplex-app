@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion, useReducedMotion } from "framer-motion";
-import { Star, Plus, Check, Trash2, Eye } from "lucide-react";
+import { Star, Plus, Check, Trash2, Eye, Bookmark, CheckCircle, Heart } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
@@ -13,6 +13,12 @@ import {
   DialogDescription,
   DialogFooter,
 } from "./ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
 import { useAuthStore } from "../stores/authStore";
 import { useWatchlistStore } from "../stores/watchlistStore";
 import { posterUrl } from "../services/tmdb";
@@ -27,12 +33,26 @@ export default function MovieCard({ movie, index = 0, showRemove = false, addedA
   const add = useWatchlistStore((s) => s.add);
   const remove = useWatchlistStore((s) => s.remove);
   const isInList = useWatchlistStore((s) => s.isInList(movie.id));
+  const setStatus = useWatchlistStore((s) => s.setStatus);
+  const currentStatus = useWatchlistStore((s) => s.items.find((m) => m.id === movie.id)?.status ?? null);
 
   const poster = posterUrl(movie.poster_path) || PLACEHOLDER;
   const title = movie.title || movie.Title || "Untitled";
   const year = (movie.release_date || movie.Year || "").slice(0, 4);
   const rating = movie.vote_average ? movie.vote_average.toFixed(1) : null;
   const movieId = movie.id;
+
+  const STATUS_OPTIONS = [
+    { value: "to_watch", label: "To Watch", icon: Bookmark },
+    { value: "watched", label: "Watched", icon: CheckCircle },
+    { value: "favorite", label: "Favorite", icon: Heart },
+  ];
+
+  const StatusIcon = ({ status }) => {
+    const opt = STATUS_OPTIONS.find((o) => o.value === status);
+    if (!opt) return <Bookmark className="h-3.5 w-3.5" />;
+    return <opt.icon className="h-3.5 w-3.5" />;
+  };
 
   const watchlistItem = {
     id: movieId,
@@ -117,19 +137,58 @@ export default function MovieCard({ movie, index = 0, showRemove = false, addedA
                 onClick={(e) => e.preventDefault()}
               >
                 {showRemove ? (
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    className="w-full text-xs"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      setRemoveOpen(true);
-                    }}
-                  >
-                    <Trash2 className="h-3.5 w-3.5 mr-1" />
-                    Remove
-                  </Button>
+                  <div className="flex gap-1.5 w-full">
+                    {/* Status dropdown */}
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="shrink-0 px-2"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                          }}
+                        >
+                          <StatusIcon status={currentStatus} />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="start">
+                        {STATUS_OPTIONS.map((opt) => (
+                          <DropdownMenuItem
+                            key={opt.value}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              if (user) setStatus(movieId, user.id, opt.value);
+                            }}
+                            className={currentStatus === opt.value ? "bg-accent" : ""}
+                          >
+                            <opt.icon className="h-4 w-4 mr-2" />
+                            {opt.label}
+                            {currentStatus === opt.value && (
+                              <Check className="h-3.5 w-3.5 ml-auto text-primary" />
+                            )}
+                          </DropdownMenuItem>
+                        ))}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+
+                    {/* Remove button */}
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      className="flex-1 text-xs"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setRemoveOpen(true);
+                      }}
+                    >
+                      <Trash2 className="h-3.5 w-3.5 mr-1" />
+                      Remove
+                    </Button>
+                  </div>
                 ) : isInList ? (
                   <Button
                     variant="secondary"
