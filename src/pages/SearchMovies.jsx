@@ -1,23 +1,22 @@
-import { useState, useRef, useEffect } from "react";
-import { useQuery, keepPreviousData } from "@tanstack/react-query";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import {
   Search,
   X,
-  ChevronLeft,
-  ChevronRight,
   Sparkles,
   Film,
   AlertTriangle,
 } from "lucide-react";
 import { Input } from "../components/ui/input";
-import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
 import MovieCard from "../components/MovieCard";
 import MovieCardSkeleton from "../components/MovieCardSkeleton";
 import { searchMovies, getTrendingMovies, getGenres, discoverByGenre } from "../services/tmdb";
 import { useDebounce } from "../hooks/useDebounce";
 import { usePageTitle } from "../hooks/usePageTitle";
+import { queryKeys } from "../lib/queryKeys";
+import { useIntersectionObserver } from "../hooks/useIntersectionObserver";
 
 const container = {
   hidden: { opacity: 0 },
@@ -30,7 +29,6 @@ const container = {
 export default function SearchMovies() {
   usePageTitle("Search Movies");
   const [query, setQuery] = useState("");
-  const [page, setPage] = useState(1);
   const [activeGenre, setActiveGenre] = useState(null);
   const inputRef = useRef(null);
 
@@ -42,7 +40,6 @@ export default function SearchMovies() {
       }
       if (e.key === "Escape") {
         setQuery("");
-        setPage(1);
         inputRef.current?.blur();
       }
     };
@@ -56,23 +53,37 @@ export default function SearchMovies() {
 
   const {
     data: searchData,
+    fetchNextPage: fetchNextSearch,
+    hasNextPage: hasNextSearch,
+    isFetchingNextPage: fetchingNextSearch,
     isLoading: searchLoading,
     isError: searchError,
-  } = useQuery({
-    queryKey: ["search", debouncedQuery, page],
-    queryFn: () => searchMovies(debouncedQuery, page),
+  } = useInfiniteQuery({
+    queryKey: queryKeys.search.infinite(debouncedQuery),
+    queryFn: ({ pageParam = 1 }) => searchMovies(debouncedQuery, pageParam),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, allPages) => {
+      const next = allPages.length + 1;
+      return next <= lastPage.totalPages ? next : undefined;
+    },
     enabled: showSearch,
-    placeholderData: keepPreviousData,
   });
 
   const {
     data: genreData,
+    fetchNextPage: fetchNextGenre,
+    hasNextPage: hasNextGenre,
+    isFetchingNextPage: fetchingNextGenre,
     isLoading: genreLoading,
-  } = useQuery({
-    queryKey: ["discover", activeGenre, page],
-    queryFn: () => discoverByGenre(activeGenre, page),
+  } = useInfiniteQuery({
+    queryKey: queryKeys.discover.infinite(activeGenre),
+    queryFn: ({ pageParam = 1 }) => discoverByGenre(activeGenre, pageParam),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, allPages) => {
+      const next = allPages.length + 1;
+      return next <= lastPage.totalPages ? next : undefined;
+    },
     enabled: showGenreDiscover,
-    placeholderData: keepPreviousData,
   });
 
   const { data: featured, isLoading: featuredLoading } = useQuery({
@@ -87,19 +98,33 @@ export default function SearchMovies() {
     staleTime: Infinity,
   });
 
-  const activeData = showSearch ? searchData : showGenreDiscover ? genreData : null;
+  const searchMoviesList = searchData?.pages.flatMap((p) => p.results) ?? [];
+  const searchTotal = searchData?.pages[0]?.total ?? 0;
+  const genreMoviesList = genreData?.pages.flatMap((p) => p.results) ?? [];
+  const genreTotal = genreData?.pages[0]?.total ?? 0;
+
+  const activeMoviesList = showSearch ? searchMoviesList : showGenreDiscover ? genreMoviesList : [];
+  const activeTotal = showSearch ? searchTotal : showGenreDiscover ? genreTotal : 0;
   const activeLoading = showSearch ? searchLoading : showGenreDiscover ? genreLoading : false;
-  const totalPages = activeData?.totalPages || 0;
+  const activeError = showSearch ? searchError : false;
+
+  const loadMoreRef = useIntersectionObserver(
+    useCallback(() => {
+      if (showSearch && hasNextSearch && !fetchingNextSearch) fetchNextSearch();
+      if (showGenreDiscover && hasNextGenre && !fetchingNextGenre) fetchNextGenre();
+    }, [showSearch, hasNextSearch, fetchingNextSearch, fetchNextSearch,
+        showGenreDiscover, hasNextGenre, fetchingNextGenre, fetchNextGenre])
+  );
 
   const handleQueryChange = (e) => {
     setQuery(e.target.value);
-    setPage(1);
+    // no setPage needed
   };
 
   const handleGenreClick = (genreId) => {
     if (query.length > 0) setQuery("");
     setActiveGenre((prev) => (prev === genreId ? null : genreId));
-    setPage(1);
+    // no setPage needed
   };
 
   return (
@@ -144,7 +169,6 @@ export default function SearchMovies() {
               <button
                 onClick={() => {
                   setQuery("");
-                  setPage(1);
                 }}
                 aria-label="Clear search"
                 className="absolute right-4 top-1/2 -translate-y-1/2 p-1 rounded-full text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
@@ -200,7 +224,7 @@ export default function SearchMovies() {
                   <MovieCardSkeleton key={i} />
                 ))}
               </div>
-            ) : searchError ? (
+            ) : activeError ? (
               <div className="py-20 text-center">
                 <AlertTriangle className="h-12 w-12 text-destructive mx-auto mb-4" />
                 <p className="text-lg font-medium">Something went wrong</p>
@@ -208,17 +232,14 @@ export default function SearchMovies() {
                   Please try again later.
                 </p>
               </div>
-            ) : activeData && activeData.results.length > 0 ? (
+            ) : activeMoviesList.length > 0 ? (
               <>
                 {/* Result count */}
                 <div className="flex items-center justify-between mb-6">
                   <Badge variant="secondary" className="text-sm px-3 py-1">
-                    {activeData.total} result{activeData.total !== 1 ? "s" : ""}{" "}
+                    {activeTotal} result{activeTotal !== 1 ? "s" : ""}{" "}
                     found
                   </Badge>
-                  <span className="text-sm text-muted-foreground">
-                    Page {page} of {totalPages}
-                  </span>
                 </div>
 
                 {/* Grid */}
@@ -226,36 +247,19 @@ export default function SearchMovies() {
                   variants={container}
                   initial="hidden"
                   animate="show"
-                  key={`${debouncedQuery}-${activeGenre}-${page}`}
+                  key={`${debouncedQuery}-${activeGenre}`}
                   className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6"
                 >
-                  {activeData.results.map((movie, i) => (
+                  {activeMoviesList.map((movie, i) => (
                     <MovieCard key={movie.id} movie={movie} index={i} />
                   ))}
                 </motion.div>
 
-                {/* Pagination */}
-                {totalPages > 1 && (
-                  <div className="flex items-center justify-center gap-4 mt-10">
-                    <Button
-                      variant="outline"
-                      onClick={() => setPage((p) => Math.max(1, p - 1))}
-                      disabled={page === 1}
-                    >
-                      <ChevronLeft className="h-4 w-4 mr-1" />
-                      Previous
-                    </Button>
-                    <div className="glass rounded-full px-4 py-2 text-sm font-medium">
-                      {page} / {totalPages}
-                    </div>
-                    <Button
-                      variant="outline"
-                      onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                      disabled={page === totalPages}
-                    >
-                      Next
-                      <ChevronRight className="h-4 w-4 ml-1" />
-                    </Button>
+                {/* Infinite scroll sentinel */}
+                <div ref={loadMoreRef} className="h-10" />
+                {(fetchingNextSearch || fetchingNextGenre) && (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6 mt-4">
+                    {Array.from({ length: 5 }).map((_, i) => <MovieCardSkeleton key={i} />)}
                   </div>
                 )}
               </>

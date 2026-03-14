@@ -1,74 +1,54 @@
-import { create } from "zustand";
-
-function getKey(userId) {
-  return `cineplex_watchlist_${userId}`;
-}
-
-function loadItems(userId) {
-  try {
-    const raw = localStorage.getItem(getKey(userId));
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
-}
-
-function persist(userId, items) {
-  localStorage.setItem(getKey(userId), JSON.stringify(items));
-}
+import { create } from 'zustand'
+import {
+  collection, doc, onSnapshot,
+  setDoc, deleteDoc, updateDoc,
+  serverTimestamp, query, orderBy,
+} from 'firebase/firestore'
+import { db } from '../services/firebase'
 
 export const useWatchlistStore = create((set, get) => ({
   items: [],
+  _unsub: null,
 
-  hydrate: (userId) => {
-    if (!userId) {
-      set({ items: [] });
-      return;
-    }
-    const loaded = loadItems(userId);
-    const backfilled = loaded.map((m) => ({ status: "to_watch", ...m }));
-    set({ items: backfilled });
+  subscribe: (uid) => {
+    get()._unsub?.()
+    if (!uid) { set({ items: [], _unsub: null }); return }
+    const q = query(
+      collection(db, 'users', uid, 'watchlist'),
+      orderBy('addedAt', 'desc')
+    )
+    const unsub = onSnapshot(q, (snap) => {
+      set({ items: snap.docs.map((d) => d.data()) })
+    })
+    set({ _unsub: unsub })
   },
 
-  add: (movie, userId) => {
-    const { items } = get();
-    if (items.some((m) => m.id === movie.id)) return;
-    const next = [
-      {
-        id: movie.id,
-        title: movie.title,
-        poster_path: movie.poster_path,
-        release_date: movie.release_date,
-        vote_average: movie.vote_average,
-        addedAt: Date.now(),
-        status: "to_watch",
-      },
-      ...items,
-    ];
-    persist(userId, next);
-    set({ items: next });
+  unsubscribeAll: () => {
+    get()._unsub?.()
+    set({ items: [], _unsub: null })
   },
 
-  remove: (movieId, userId) => {
-    const { items } = get();
-    const next = items.filter((m) => m.id !== movieId);
-    persist(userId, next);
-    set({ items: next });
+  add: async (movie, uid) => {
+    const ref = doc(db, 'users', uid, 'watchlist', String(movie.id))
+    await setDoc(ref, {
+      id: movie.id,
+      title: movie.title,
+      poster_path: movie.poster_path ?? null,
+      release_date: movie.release_date ?? '',
+      vote_average: movie.vote_average ?? 0,
+      addedAt: serverTimestamp(),
+      status: 'to_watch',
+    })
   },
 
-  isInList: (movieId) => {
-    return get().items.some((m) => m.id === movieId);
+  remove: async (movieId, uid) => {
+    await deleteDoc(doc(db, 'users', uid, 'watchlist', String(movieId)))
   },
 
-  setStatus: (movieId, userId, status) => {
-    const { items } = get();
-    const next = items.map((m) => m.id === movieId ? { ...m, status } : m);
-    persist(userId, next);
-    set({ items: next });
+  setStatus: async (movieId, uid, status) => {
+    await updateDoc(doc(db, 'users', uid, 'watchlist', String(movieId)), { status })
   },
 
-  getItemStatus: (movieId) => {
-    const item = get().items.find((m) => m.id === movieId);
-    return item?.status ?? null;
-  },
-}));
+  isInList: (movieId) => get().items.some((m) => m.id === movieId),
+  getItemStatus: (movieId) => get().items.find((m) => m.id === movieId)?.status ?? null,
+}))

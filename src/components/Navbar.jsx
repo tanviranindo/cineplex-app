@@ -10,6 +10,7 @@ import {
   LogOut,
   Menu,
   X,
+  Settings,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "./ui/button";
@@ -98,6 +99,12 @@ export default function Navbar() {
                     {user.name}
                   </span>
                 </div>
+                <Button variant="ghost" size="sm" asChild className="text-muted-foreground hover:text-foreground">
+                  <Link to="/account" className="flex items-center gap-2">
+                    <Settings className="h-4 w-4" />
+                    Account
+                  </Link>
+                </Button>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -141,18 +148,6 @@ export default function Navbar() {
             className="md:hidden overflow-hidden glass border-t border-white/10"
           >
             <div className="px-4 py-4 space-y-3">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.to}
-                  to={link.to}
-                  onClick={() => setMobileOpen(false)}
-                  className="flex items-center gap-3 px-3 py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                >
-                  <link.icon className="h-4 w-4" />
-                  {link.label}
-                </Link>
-              ))}
-
               <div className="flex items-center gap-2 px-3 py-2">
                 <Sun className="h-4 w-4 text-muted-foreground" />
                 <Switch
@@ -172,6 +167,14 @@ export default function Navbar() {
                       </div>
                       <p className="text-sm text-muted-foreground">{user.name}</p>
                     </div>
+                    <Link
+                      to="/account"
+                      onClick={() => setMobileOpen(false)}
+                      className="flex items-center gap-3 px-3 py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                    >
+                      <Settings className="h-4 w-4" />
+                      Account Settings
+                    </Link>
                     <button
                       onClick={handleLogout}
                       className="flex items-center gap-3 px-3 py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-colors w-full"

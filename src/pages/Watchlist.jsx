@@ -44,8 +44,15 @@ function sortItems(items, sortBy) {
         return yb.localeCompare(ya);
       });
     case "added":
-    default:
-      return sorted.sort((a, b) => (b.addedAt || 0) - (a.addedAt || 0));
+    default: {
+      const toMs = (v) => {
+        if (!v) return 0
+        if (typeof v === 'number') return v
+        if (typeof v.toMillis === 'function') return v.toMillis()
+        return 0
+      }
+      return sorted.sort((a, b) => toMs(b.addedAt) - toMs(a.addedAt))
+    }
   }
 }
 

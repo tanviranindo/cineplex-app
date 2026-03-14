@@ -2,6 +2,7 @@ import { Outlet, useLocation } from "react-router-dom";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import ScrollToTop from "./ScrollToTop";
 import Navbar from "./Navbar";
+import BottomNav from "./BottomNav";
 import ErrorBoundary from "./ErrorBoundary";
 import { Film } from "lucide-react";
 
@@ -19,7 +20,7 @@ export default function Layout() {
       </a>
       <ScrollToTop />
       <Navbar />
-      <main id="main-content" className="flex-1">
+      <main id="main-content" className="flex-1 pb-16 md:pb-0">
         <ErrorBoundary>
           <AnimatePresence mode="wait">
             <motion.div
@@ -34,6 +35,7 @@ export default function Layout() {
           </AnimatePresence>
         </ErrorBoundary>
       </main>
+      <BottomNav />
       <footer className="border-t border-border/50 py-8 mt-auto">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col items-center gap-3">

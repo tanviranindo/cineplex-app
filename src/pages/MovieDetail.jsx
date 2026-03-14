@@ -25,6 +25,7 @@ import {
 import { usePageTitle } from "../hooks/usePageTitle";
 import { useAuthStore } from "../stores/authStore";
 import { useWatchlistStore } from "../stores/watchlistStore";
+import { queryKeys } from "../lib/queryKeys";
 
 const PLACEHOLDER =
   "https://via.placeholder.com/300x450/1a1a2e/8b5cf6?text=No+Poster";
@@ -43,18 +44,18 @@ export default function MovieDetail() {
   const currentStatus = useWatchlistStore((s) => s.items.find((m) => m.id === movieId)?.status ?? null);
 
   const { data: movie, isLoading, isError } = useQuery({
-    queryKey: ["movie", id],
+    queryKey: queryKeys.movies.detail(id),
     queryFn: () => getMovieById(id),
   });
 
   const { data: similar } = useQuery({
-    queryKey: ["similar", id],
+    queryKey: queryKeys.movies.similar(id),
     queryFn: () => getSimilarMovies(id),
     enabled: !!movie,
   });
 
   const { data: providers } = useQuery({
-    queryKey: ["providers", id],
+    queryKey: queryKeys.movies.providers(id),
     queryFn: () => getWatchProviders(id),
     enabled: !!movie,
     staleTime: 1000 * 60 * 60,
@@ -62,25 +63,33 @@ export default function MovieDetail() {
 
   usePageTitle(movie?.title);
 
-  const handleAdd = () => {
+  const handleAdd = async () => {
     if (!user) {
       toast.error("Please sign in to add movies to your watchlist");
       return;
     }
-    add({
-      id: movie.id,
-      title: movie.title,
-      poster_path: movie.poster_path,
-      release_date: movie.release_date,
-      vote_average: movie.vote_average,
-    }, user.id);
-    toast.success(`"${movie.title}" added to watchlist`);
+    try {
+      await add({
+        id: movie.id,
+        title: movie.title,
+        poster_path: movie.poster_path,
+        release_date: movie.release_date,
+        vote_average: movie.vote_average,
+      }, user.id);
+      toast.success(`"${movie.title}" added to watchlist`);
+    } catch {
+      toast.error("Failed to update watchlist");
+    }
   };
 
-  const handleRemove = () => {
+  const handleRemove = async () => {
     if (!user) return;
-    remove(movie.id, user.id);
-    toast.success(`"${movie.title}" removed from watchlist`);
+    try {
+      await remove(movie.id, user.id);
+      toast.success(`"${movie.title}" removed from watchlist`);
+    } catch {
+      toast.error("Failed to remove from watchlist");
+    }
   };
 
   if (isLoading) {
@@ -145,7 +154,7 @@ export default function MovieDetail() {
         <div className="absolute inset-0 bg-gradient-to-b from-background/50 to-background" />
       </div>
 
-      <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
@@ -174,6 +183,7 @@ export default function MovieDetail() {
               <img
                 src={poster}
                 alt={movie.title}
+                fetchPriority="high"
                 className="relative w-64 sm:w-72 rounded-2xl shadow-2xl"
               />
             </div>
@@ -368,7 +378,13 @@ export default function MovieDetail() {
                       {STATUS_OPTIONS.map((o) => (
                         <DropdownMenuItem
                           key={o.value}
-                          onClick={() => setStatus(movieId, user.id, o.value)}
+                          onClick={async () => {
+                            try {
+                              await setStatus(movieId, user.id, o.value);
+                            } catch {
+                              toast.error("Failed to update watchlist");
+                            }
+                          }}
                           className={currentStatus === o.value ? "bg-accent" : ""}
                         >
                           <o.icon className="h-4 w-4 mr-2" />

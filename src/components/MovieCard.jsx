@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { motion, useReducedMotion } from "framer-motion";
 import { Star, Plus, Check, Trash2, Eye, Bookmark, CheckCircle, Heart } from "lucide-react";
@@ -21,7 +21,9 @@ import {
 } from "./ui/dropdown-menu";
 import { useAuthStore } from "../stores/authStore";
 import { useWatchlistStore } from "../stores/watchlistStore";
-import { posterUrl } from "../services/tmdb";
+import { posterUrl, getMovieById } from "../services/tmdb";
+import { queryClient } from "../lib/queryClient";
+import { queryKeys } from "../lib/queryKeys";
 
 const PLACEHOLDER =
   "https://via.placeholder.com/300x450/1a1a2e/8b5cf6?text=No+Poster";
@@ -62,22 +64,38 @@ export default function MovieCard({ movie, index = 0, showRemove = false, addedA
     vote_average: movie.vote_average,
   };
 
-  const handleAdd = (e) => {
+  const handleMouseEnter = useCallback(() => {
+    queryClient.prefetchQuery({
+      queryKey: queryKeys.movies.detail(movieId),
+      queryFn: () => getMovieById(movieId),
+      staleTime: 1000 * 60 * 5,
+    })
+  }, [movieId])
+
+  const handleAdd = async (e) => {
     e.preventDefault();
     e.stopPropagation();
     if (!user) {
       toast.error("Please sign in to add movies to your watchlist");
       return;
     }
-    add(watchlistItem, user.id);
-    toast.success(`"${title}" added to watchlist`);
+    try {
+      await add(watchlistItem, user.id);
+      toast.success(`"${title}" added to watchlist`);
+    } catch {
+      toast.error("Failed to update watchlist");
+    }
   };
 
-  const handleRemoveConfirm = () => {
+  const handleRemoveConfirm = async () => {
     if (!user) return;
-    remove(movieId, user.id);
-    toast.success(`"${title}" removed from watchlist`);
-    setRemoveOpen(false);
+    try {
+      await remove(movieId, user.id);
+      toast.success(`"${title}" removed from watchlist`);
+      setRemoveOpen(false);
+    } catch {
+      toast.error("Failed to remove from watchlist");
+    }
   };
 
   return (
@@ -88,13 +106,13 @@ export default function MovieCard({ movie, index = 0, showRemove = false, addedA
         viewport={{ once: true, margin: "-50px" }}
         transition={{ duration: reducedMotion ? 0 : 0.4 }}
       >
-        <Link to={`/movie/${movieId}`} className="block group">
+        <Link to={`/movie/${movieId}`} className="block group" onMouseEnter={handleMouseEnter}>
           <div className="card-glow rounded-xl overflow-hidden glass">
             <div className="relative aspect-[2/3] overflow-hidden">
               <img
                 src={poster}
                 alt={title}
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                 loading="lazy"
               />
 
@@ -128,7 +146,7 @@ export default function MovieCard({ movie, index = 0, showRemove = false, addedA
 
               {addedAt && (
                 <p className="text-[10px] text-muted-foreground/60">
-                  Added {new Intl.DateTimeFormat("en-US", { month: "short", year: "numeric" }).format(new Date(addedAt))}
+                  Added {new Intl.DateTimeFormat("en-US", { month: "short", year: "numeric" }).format(addedAt?.toDate?.() ?? new Date(addedAt))}
                 </p>
               )}
 
@@ -157,10 +175,16 @@ export default function MovieCard({ movie, index = 0, showRemove = false, addedA
                         {STATUS_OPTIONS.map((opt) => (
                           <DropdownMenuItem
                             key={opt.value}
-                            onClick={(e) => {
+                            onClick={async (e) => {
                               e.preventDefault();
                               e.stopPropagation();
-                              if (user) setStatus(movieId, user.id, opt.value);
+                              if (user) {
+                                try {
+                                  await setStatus(movieId, user.id, opt.value);
+                                } catch {
+                                  toast.error("Failed to update watchlist");
+                                }
+                              }
                             }}
                             className={currentStatus === opt.value ? "bg-accent" : ""}
                           >
