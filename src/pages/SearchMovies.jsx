@@ -146,6 +146,7 @@ export default function SearchMovies() {
                   setQuery("");
                   setPage(1);
                 }}
+                aria-label="Clear search"
                 className="absolute right-4 top-1/2 -translate-y-1/2 p-1 rounded-full text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
               >
                 <X className="h-5 w-5" />

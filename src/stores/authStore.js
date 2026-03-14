@@ -29,6 +29,9 @@ export const useAuthStore = create((set) => ({
     if (exists) {
       return { ok: false, error: "An account with this email already exists." };
     }
+    if (password.length < 8) {
+      return { ok: false, error: "Password must be at least 8 characters." };
+    }
     const newUser = {
       id: crypto.randomUUID(),
       name,

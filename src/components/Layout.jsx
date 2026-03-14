@@ -11,9 +11,15 @@ export default function Layout() {
 
   return (
     <div className="noise min-h-screen flex flex-col">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[9999] focus:px-4 focus:py-2 focus:bg-background focus:rounded-lg focus:text-foreground focus:shadow-lg focus:outline-none"
+      >
+        Skip to content
+      </a>
       <ScrollToTop />
       <Navbar />
-      <main className="flex-1">
+      <main id="main-content" className="flex-1">
         <ErrorBoundary>
           <AnimatePresence mode="wait">
             <motion.div
