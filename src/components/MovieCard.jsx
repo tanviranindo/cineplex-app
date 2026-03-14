@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { Star, Plus, Check, Trash2, Eye } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "./ui/button";
@@ -22,6 +22,7 @@ const PLACEHOLDER =
 
 export default function MovieCard({ movie, index = 0, showRemove = false }) {
   const [removeOpen, setRemoveOpen] = useState(false);
+  const reducedMotion = useReducedMotion();
   const user = useAuthStore((s) => s.user);
   const add = useWatchlistStore((s) => s.add);
   const remove = useWatchlistStore((s) => s.remove);
@@ -62,10 +63,10 @@ export default function MovieCard({ movie, index = 0, showRemove = false }) {
   return (
     <>
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: reducedMotion ? 0 : 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-50px" }}
-        transition={{ duration: 0.4 }}
+        transition={{ duration: reducedMotion ? 0 : 0.4 }}
       >
         <Link to={`/movie/${movieId}`} className="block group">
           <div className="card-glow rounded-xl overflow-hidden glass">

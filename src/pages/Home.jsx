@@ -1,22 +1,9 @@
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { Play, UserPlus, Search, Star, BookmarkCheck, TrendingUp } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { useAuthStore } from "../stores/authStore";
 import { usePageTitle } from "../hooks/usePageTitle";
-
-const container = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.1 },
-  },
-};
-
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.5 } },
-};
 
 const features = [
   {
@@ -45,6 +32,21 @@ const features = [
 export default function Home() {
   const user = useAuthStore((s) => s.user);
   usePageTitle("Home");
+
+  const reducedMotion = useReducedMotion();
+
+  const container = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: reducedMotion ? 0 : 0.1 },
+    },
+  };
+
+  const item = {
+    hidden: { opacity: 0, y: reducedMotion ? 0 : 20 },
+    show: { opacity: 1, y: 0, transition: { duration: reducedMotion ? 0 : 0.5 } },
+  };
 
   return (
     <div className="relative overflow-hidden">

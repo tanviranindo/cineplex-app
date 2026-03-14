@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { Film, User, Mail, Lock, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "../components/ui/button";
@@ -20,6 +20,7 @@ export default function Login() {
   const signup = useAuthStore((s) => s.signup);
   const login = useAuthStore((s) => s.login);
   const navigate = useNavigate();
+  const reducedMotion = useReducedMotion();
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -57,18 +58,18 @@ export default function Login() {
       <div className="ambient-orb w-72 h-72 bg-cyan-500/10 bottom-10 -left-20 animate-float-slow" />
 
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: reducedMotion ? 0 : 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
+        transition={{ duration: reducedMotion ? 0 : 0.5 }}
         className="w-full max-w-md"
       >
         <div className="glass rounded-2xl p-8 card-glow">
           {/* Icon */}
           <div className="flex justify-center mb-6">
             <motion.div
-              initial={{ scale: 0 }}
+              initial={{ scale: reducedMotion ? 1 : 0 }}
               animate={{ scale: 1 }}
-              transition={{ type: "spring", stiffness: 260, damping: 20, delay: 0.1 }}
+              transition={reducedMotion ? { duration: 0 } : { type: "spring", stiffness: 260, damping: 20, delay: 0.1 }}
               className="p-4 rounded-2xl bg-gradient-to-br from-violet-500 to-cyan-400 shadow-lg shadow-violet-500/25"
             >
               <Film className="h-8 w-8 text-white" />
