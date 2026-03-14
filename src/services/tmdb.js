@@ -1,4 +1,4 @@
-const TOKEN = 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJhYTZiY2QxNGM1MmNmMGFjOGU5NDgwM2ZiZTQxOGY1YyIsIm5iZiI6MTc3MzQ1ODQ0Mi44NzYsInN1YiI6IjY5YjRkNDBhNDMxYjVhZDRjNjVjOTE0MyIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.E7zIOK9zzqjE6Dmn05delJESTsdWQ4qIU11YH8GilWQ'
+const TOKEN = import.meta.env.VITE_TMDB_TOKEN
 const BASE = 'https://api.themoviedb.org/3'
 export const IMG_BASE = 'https://image.tmdb.org/t/p'
 
