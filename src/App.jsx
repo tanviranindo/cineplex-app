@@ -14,6 +14,7 @@ const SearchMovies = lazy(() => import("./pages/SearchMovies"));
 const MovieDetail = lazy(() => import("./pages/MovieDetail"));
 const Watchlist = lazy(() => import("./pages/Watchlist"));
 const Account = lazy(() => import("./pages/Account"));
+const Browse = lazy(() => import("./pages/Browse"));
 
 export default function App() {
   const initAuth = useAuthStore((s) => s.initAuth);
@@ -48,6 +49,7 @@ export default function App() {
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/search" element={<SearchMovies />} />
+            <Route path="/browse" element={<Browse />} />
             <Route path="/movie/:id" element={<MovieDetail />} />
             <Route
               path="/watchlist"

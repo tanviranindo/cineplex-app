@@ -1,10 +1,11 @@
 import { NavLink } from 'react-router-dom'
-import { Home, Search, BookmarkCheck, User } from 'lucide-react'
+import { Home, Search, Compass, BookmarkCheck, User } from 'lucide-react'
 import { useAuthStore } from '../stores/authStore'
 
 const ALL_ITEMS = [
   { to: '/', icon: Home, label: 'Home', requiresAuth: false },
   { to: '/search', icon: Search, label: 'Search', requiresAuth: false },
+  { to: '/browse', icon: Compass, label: 'Browse', requiresAuth: false },
   { to: '/watchlist', icon: BookmarkCheck, label: 'Watchlist', requiresAuth: true },
   { to: '/account', icon: User, label: 'Account', requiresAuth: true },
 ]

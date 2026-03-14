@@ -5,6 +5,7 @@ import {
   Film,
   Search,
   BookmarkCheck,
+  Compass,
   Sun,
   Moon,
   LogOut,
@@ -54,7 +55,8 @@ export default function Navbar() {
   };
 
   const navLinks = [
-    { to: "/search", label: "Search", icon: Search },
+    { to: "/search",    label: "Search",    icon: Search },
+    { to: "/browse",    label: "Browse",    icon: Compass },
     ...(user
       ? [{ to: "/watchlist", label: "Watchlist", icon: BookmarkCheck }]
       : []),

@@ -10,6 +10,9 @@ export const queryKeys = {
   discover: {
     infinite: (genreId) => ['discover', 'infinite', String(genreId)],
   },
+  browse: {
+    infinite: (filters) => ['browse', 'infinite', filters],
+  },
   trending: ['trending'],
   genres: ['genres'],
 }

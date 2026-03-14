@@ -90,6 +90,27 @@ export async function discoverByGenre(genreId, page = 1) {
   }
 }
 
+export async function discoverMovies({ genreId, sortBy = 'popularity.desc', year } = {}, page = 1) {
+  const params = new URLSearchParams({
+    sort_by: sortBy,
+    page: String(page),
+    'vote_count.gte': '50',
+  })
+  if (genreId) params.set('with_genres', String(genreId))
+  if (year) params.set('primary_release_year', String(year))
+  // Upcoming: sort by future release date ascending
+  if (sortBy === 'primary_release_date.asc') {
+    params.set('primary_release_date.gte', new Date().toISOString().slice(0, 10))
+    params.delete('primary_release_year')
+  }
+  const data = await tmdbFetch(`/discover/movie?${params}`)
+  return {
+    results: data.results || [],
+    total: data.total_results || 0,
+    totalPages: data.total_pages || 0,
+  }
+}
+
 export async function getWatchProviders(movieId) {
   const data = await tmdbFetch(`/movie/${movieId}/watch/providers`)
   const us = data.results?.US
