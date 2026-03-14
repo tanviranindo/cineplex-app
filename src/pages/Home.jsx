@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Play, UserPlus, Search, Star, BookmarkCheck, TrendingUp } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { useAuthStore } from "../stores/authStore";
+import { usePageTitle } from "../hooks/usePageTitle";
 
 const container = {
   hidden: { opacity: 0 },
@@ -43,6 +44,7 @@ const features = [
 
 export default function Home() {
   const user = useAuthStore((s) => s.user);
+  usePageTitle("Home");
 
   return (
     <div className="relative overflow-hidden">

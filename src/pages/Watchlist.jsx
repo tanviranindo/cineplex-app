@@ -5,6 +5,7 @@ import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
 import MovieCard from "../components/MovieCard";
 import { useWatchlistStore } from "../stores/watchlistStore";
+import { usePageTitle } from "../hooks/usePageTitle";
 
 const container = {
   hidden: { opacity: 0 },
@@ -15,6 +16,7 @@ const container = {
 };
 
 export default function Watchlist() {
+  usePageTitle("My Watchlist");
   const items = useWatchlistStore((s) => s.items);
 
   if (items.length === 0) {

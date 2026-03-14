@@ -18,6 +18,7 @@ import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
 import MovieDetailSkeleton from "../components/MovieDetailSkeleton";
 import { getMovieById, posterUrl, backdropUrl } from "../services/tmdb";
+import { usePageTitle } from "../hooks/usePageTitle";
 import { useAuthStore } from "../stores/authStore";
 import { useWatchlistStore } from "../stores/watchlistStore";
 
@@ -37,6 +38,8 @@ export default function MovieDetail() {
     queryKey: ["movie", id],
     queryFn: () => getMovieById(id),
   });
+
+  usePageTitle(movie?.title);
 
   const handleAdd = () => {
     if (!user) {

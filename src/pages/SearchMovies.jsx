@@ -17,6 +17,7 @@ import MovieCard from "../components/MovieCard";
 import MovieCardSkeleton from "../components/MovieCardSkeleton";
 import { searchMovies, getTrendingMovies } from "../services/tmdb";
 import { useDebounce } from "../hooks/useDebounce";
+import { usePageTitle } from "../hooks/usePageTitle";
 
 const container = {
   hidden: { opacity: 0 },
@@ -27,6 +28,7 @@ const container = {
 };
 
 export default function SearchMovies() {
+  usePageTitle("Search Movies");
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
   const debouncedQuery = useDebounce(query, 400);
