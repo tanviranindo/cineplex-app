@@ -15,7 +15,7 @@ import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
 import MovieCard from "../components/MovieCard";
 import MovieCardSkeleton from "../components/MovieCardSkeleton";
-import { searchMovies, getTrendingMovies } from "../services/tmdb";
+import { searchMovies, getTrendingMovies, getGenres, discoverByGenre } from "../services/tmdb";
 import { useDebounce } from "../hooks/useDebounce";
 import { usePageTitle } from "../hooks/usePageTitle";
 
@@ -31,7 +31,11 @@ export default function SearchMovies() {
   usePageTitle("Search Movies");
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
+  const [activeGenre, setActiveGenre] = useState(null);
   const debouncedQuery = useDebounce(query, 400);
+
+  const showSearch = debouncedQuery.trim().length >= 2;
+  const showGenreDiscover = !showSearch && activeGenre !== null;
 
   const {
     data: searchData,
@@ -40,7 +44,17 @@ export default function SearchMovies() {
   } = useQuery({
     queryKey: ["search", debouncedQuery, page],
     queryFn: () => searchMovies(debouncedQuery, page),
-    enabled: debouncedQuery.trim().length >= 2,
+    enabled: showSearch,
+    keepPreviousData: true,
+  });
+
+  const {
+    data: genreData,
+    isLoading: genreLoading,
+  } = useQuery({
+    queryKey: ["discover", activeGenre, page],
+    queryFn: () => discoverByGenre(activeGenre, page),
+    enabled: showGenreDiscover,
     keepPreviousData: true,
   });
 
@@ -50,11 +64,23 @@ export default function SearchMovies() {
     staleTime: 1000 * 60 * 30,
   });
 
-  const totalPages = searchData?.totalPages || 0;
-  const showSearch = debouncedQuery.trim().length >= 2;
+  const { data: genres } = useQuery({
+    queryKey: ["genres"],
+    queryFn: getGenres,
+    staleTime: Infinity,
+  });
+
+  const activeData = showSearch ? searchData : showGenreDiscover ? genreData : null;
+  const activeLoading = showSearch ? searchLoading : showGenreDiscover ? genreLoading : false;
+  const totalPages = activeData?.totalPages || 0;
 
   const handleQueryChange = (e) => {
     setQuery(e.target.value);
+    setPage(1);
+  };
+
+  const handleGenreClick = (genreId) => {
+    setActiveGenre((prev) => (prev === genreId ? null : genreId));
     setPage(1);
   };
 
@@ -84,7 +110,7 @@ export default function SearchMovies() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="max-w-2xl mx-auto mb-12"
+          className="max-w-2xl mx-auto mb-6"
         >
           <div className="relative search-glow rounded-xl">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
@@ -107,12 +133,31 @@ export default function SearchMovies() {
               </button>
             )}
           </div>
+
+          {/* Genre chips */}
+          {genres && (
+            <div className="flex flex-wrap gap-2 mt-4 justify-center">
+              {Object.entries(genres).map(([id, name]) => (
+                <button
+                  key={id}
+                  onClick={() => handleGenreClick(Number(id))}
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                    activeGenre === Number(id)
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-transparent text-muted-foreground border-border hover:text-foreground hover:border-foreground/30"
+                  }`}
+                >
+                  {name}
+                </button>
+              ))}
+            </div>
+          )}
         </motion.div>
 
-        {/* Search results */}
-        {showSearch ? (
+        {/* Search / Genre results */}
+        {showSearch || showGenreDiscover ? (
           <div>
-            {searchLoading ? (
+            {activeLoading ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
                 {Array.from({ length: 10 }).map((_, i) => (
                   <MovieCardSkeleton key={i} />
@@ -126,12 +171,12 @@ export default function SearchMovies() {
                   Please try again later.
                 </p>
               </div>
-            ) : searchData && searchData.results.length > 0 ? (
+            ) : activeData && activeData.results.length > 0 ? (
               <>
                 {/* Result count */}
                 <div className="flex items-center justify-between mb-6">
                   <Badge variant="secondary" className="text-sm px-3 py-1">
-                    {searchData.total} result{searchData.total !== 1 ? "s" : ""}{" "}
+                    {activeData.total} result{activeData.total !== 1 ? "s" : ""}{" "}
                     found
                   </Badge>
                   <span className="text-sm text-muted-foreground">
@@ -144,10 +189,10 @@ export default function SearchMovies() {
                   variants={container}
                   initial="hidden"
                   animate="show"
-                  key={`${debouncedQuery}-${page}`}
+                  key={`${debouncedQuery}-${activeGenre}-${page}`}
                   className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6"
                 >
-                  {searchData.results.map((movie, i) => (
+                  {activeData.results.map((movie, i) => (
                     <MovieCard key={movie.id} movie={movie} index={i} />
                   ))}
                 </motion.div>
@@ -189,7 +234,7 @@ export default function SearchMovies() {
           </div>
         ) : (
           /* Featured movies */
-          <div>
+          <div className="mt-6">
             <div className="flex items-center gap-2 mb-6">
               <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 border-0 text-white">
                 <Sparkles className="h-3 w-3 mr-1" />
