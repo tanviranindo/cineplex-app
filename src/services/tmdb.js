@@ -89,3 +89,14 @@ export async function discoverByGenre(genreId, page = 1) {
     totalPages: data.total_pages || 0,
   }
 }
+
+export async function getWatchProviders(movieId) {
+  const data = await tmdbFetch(`/movie/${movieId}/watch/providers`)
+  const us = data.results?.US
+  return {
+    stream: us?.flatrate || [],
+    rent: us?.rent || [],
+    buy: us?.buy || [],
+    link: us?.link || null,
+  }
+}

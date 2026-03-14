@@ -3,15 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { useState } from "react";
 import {
-  ArrowLeft,
-  Star,
-  Clock,
-  Calendar,
-  Film,
-  Plus,
-  Play,
-  Trash2,
-  Search,
+  ArrowLeft, Star, Clock, Calendar, Film, Plus, Play, Trash2, Search,
+  ExternalLink, Bookmark, CheckCircle, Heart, Check,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "../components/ui/button";
@@ -22,7 +15,13 @@ import {
 } from "../components/ui/dialog";
 import MovieDetailSkeleton from "../components/MovieDetailSkeleton";
 import MovieCard from "../components/MovieCard";
-import { getMovieById, getSimilarMovies, posterUrl, backdropUrl } from "../services/tmdb";
+import { getMovieById, getSimilarMovies, getWatchProviders, posterUrl, backdropUrl } from "../services/tmdb";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../components/ui/dropdown-menu";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { useAuthStore } from "../stores/authStore";
 import { useWatchlistStore } from "../stores/watchlistStore";
@@ -39,6 +38,9 @@ export default function MovieDetail() {
   const remove = useWatchlistStore((s) => s.remove);
   const movieId = parseInt(id, 10);
   const isInList = useWatchlistStore((s) => s.isInList(movieId));
+  const setStatus = useWatchlistStore((s) => s.setStatus);
+  // Use direct items selector (not s.getItemStatus) so the component re-renders when status changes
+  const currentStatus = useWatchlistStore((s) => s.items.find((m) => m.id === movieId)?.status ?? null);
 
   const { data: movie, isLoading, isError } = useQuery({
     queryKey: ["movie", id],
@@ -49,6 +51,13 @@ export default function MovieDetail() {
     queryKey: ["similar", id],
     queryFn: () => getSimilarMovies(id),
     enabled: !!movie,
+  });
+
+  const { data: providers } = useQuery({
+    queryKey: ["providers", id],
+    queryFn: () => getWatchProviders(id),
+    enabled: !!movie,
+    staleTime: 1000 * 60 * 60,
   });
 
   usePageTitle(movie?.title);
@@ -109,6 +118,12 @@ export default function MovieDetail() {
     { label: "Budget", value: budget },
     { label: "Status", value: movie.status },
   ].filter((c) => c.value);
+
+  const STATUS_OPTIONS = [
+    { value: "to_watch", label: "To Watch", icon: Bookmark },
+    { value: "watched", label: "Watched", icon: CheckCircle },
+    { value: "favorite", label: "Favorite", icon: Heart },
+  ];
 
   return (
     <div className="relative">
@@ -228,6 +243,52 @@ export default function MovieDetail() {
               </div>
             )}
 
+            {/* Streaming Providers */}
+            {providers && (providers.stream.length > 0 || providers.rent.length > 0 || providers.buy.length > 0) && (
+              <div className="glass rounded-xl p-5">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                    Where to Watch
+                  </h3>
+                  {providers.link && (
+                    <a
+                      href={providers.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
+                    >
+                      <ExternalLink className="h-3 w-3" />
+                      View all options on JustWatch
+                    </a>
+                  )}
+                </div>
+                <div className="space-y-3">
+                  {[
+                    { label: "Stream", items: providers.stream },
+                    { label: "Rent", items: providers.rent },
+                    { label: "Buy", items: providers.buy },
+                  ]
+                    .filter((g) => g.items.length > 0)
+                    .map((group) => (
+                      <div key={group.label}>
+                        <p className="text-xs text-muted-foreground mb-2">{group.label}</p>
+                        <div className="flex flex-wrap gap-2">
+                          {group.items.map((p) => (
+                            <img
+                              key={p.provider_id}
+                              src={posterUrl(p.logo_path, "w92")}
+                              alt={p.provider_name}
+                              title={p.provider_name}
+                              className="w-8 h-8 rounded-lg object-cover"
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            )}
+
             {/* Rating visual */}
             {movie.vote_average > 0 && (
               <div>
@@ -289,6 +350,38 @@ export default function MovieDetail() {
                   </Button>
                 )
               )}
+              {user && isInList && (() => {
+                const opt = STATUS_OPTIONS.find((o) => o.value === currentStatus);
+                const Icon = opt?.icon || Bookmark;
+                return (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Badge
+                        variant="secondary"
+                        className="cursor-pointer gap-1.5 px-3 py-1.5 text-sm font-medium hover:bg-secondary/80 transition-colors"
+                      >
+                        <Icon className="h-3.5 w-3.5" />
+                        {opt?.label || "To Watch"}
+                      </Badge>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      {STATUS_OPTIONS.map((o) => (
+                        <DropdownMenuItem
+                          key={o.value}
+                          onClick={() => setStatus(movieId, user.id, o.value)}
+                          className={currentStatus === o.value ? "bg-accent" : ""}
+                        >
+                          <o.icon className="h-4 w-4 mr-2" />
+                          {o.label}
+                          {currentStatus === o.value && (
+                            <Check className="h-3.5 w-3.5 ml-auto text-primary" />
+                          )}
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                );
+              })()}
               {trailer && (
                 <Button variant="outline" onClick={() => setTrailerOpen(true)}>
                   <Play className="h-4 w-4 mr-2" />
