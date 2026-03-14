@@ -12,7 +12,7 @@ import { Input } from "../components/ui/input";
 import { Badge } from "../components/ui/badge";
 import MovieCard from "../components/MovieCard";
 import MovieCardSkeleton from "../components/MovieCardSkeleton";
-import { searchMovies, getTrendingMovies, getGenres, discoverByGenre } from "../services/tmdb";
+import { searchMovies, getTrendingMovies, getGenres, discoverByGenre, backdropUrl } from "../services/tmdb";
 import { useDebounce } from "../hooks/useDebounce";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { queryKeys } from "../lib/queryKeys";
@@ -138,14 +138,26 @@ export default function SearchMovies() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-10"
+          className="relative text-center mb-10 rounded-2xl overflow-hidden glass py-12 px-6"
         >
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight">
-            <span className="gradient-text">Discover Movies</span>
-          </h1>
-          <p className="mt-3 text-muted-foreground max-w-lg mx-auto">
-            Search from a massive database of movies, TV shows, and more.
-          </p>
+          {featured?.[0]?.backdrop_path && (
+            <div className="absolute inset-0 pointer-events-none">
+              <img
+                src={backdropUrl(featured[0].backdrop_path)}
+                alt=""
+                className="w-full h-full object-cover blur-sm opacity-10 scale-110"
+                loading="lazy"
+              />
+            </div>
+          )}
+          <div className="relative z-10">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight">
+              <span className="gradient-text">Discover Movies</span>
+            </h1>
+            <p className="mt-3 text-muted-foreground max-w-lg mx-auto">
+              Search thousands of movies and build your watchlist.
+            </p>
+          </div>
         </motion.div>
 
         {/* Search bar */}

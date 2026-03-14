@@ -205,9 +205,26 @@ export default function Navbar() {
             transition={{ duration: 0.2 }}
             className="md:hidden overflow-hidden glass border-t border-white/10"
           >
-            <div className="px-4 py-4 space-y-3">
+            <div className="px-4 py-4 space-y-1">
+              {/* Nav links */}
+              {navLinks.map((link) => (
+                <Link
+                  key={link.to}
+                  to={link.to}
+                  onClick={() => setMobileOpen(false)}
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                    location.pathname === link.to
+                      ? "bg-accent text-foreground"
+                      : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                  }`}
+                >
+                  <link.icon className="h-4 w-4" />
+                  {link.label}
+                </Link>
+              ))}
+
               {/* Mobile theme toggle */}
-              <div className="flex items-center gap-2 px-3 py-2">
+              <div className="flex items-center gap-2 px-3 py-2 pt-3">
                 <button
                   onClick={() => { if (theme !== "light") toggle(); setMobileOpen(false); }}
                   className={`flex items-center gap-2 text-sm px-2 py-1 rounded-lg ${

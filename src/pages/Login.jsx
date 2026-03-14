@@ -5,12 +5,14 @@ import { Film, User, Mail, Lock, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import PasswordInput from "../components/PasswordInput";
 import { useAuthStore } from "../stores/authStore";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { loginSchema, signupSchema, forgotPasswordSchema } from "../lib/schemas";
+import { getTrendingMovies, posterUrl } from "../services/tmdb";
 
 export default function Login() {
   usePageTitle("Sign In");
@@ -30,6 +32,12 @@ export default function Login() {
   const authReady = useAuthStore((s) => s.authReady);
   const navigate = useNavigate();
   const reducedMotion = useReducedMotion();
+
+  const { data: trending } = useQuery({
+    queryKey: ["trending"],
+    queryFn: getTrendingMovies,
+    staleTime: 1000 * 60 * 30,
+  });
 
   const schema = isForgotPassword
     ? forgotPasswordSchema
@@ -112,17 +120,59 @@ export default function Login() {
   };
 
   return (
-    <div className="relative min-h-[calc(100vh-4rem)] flex items-center justify-center py-12 px-4">
-      {/* Ambient orbs */}
-      <div className="ambient-orb w-96 h-96 bg-violet-500/15 -top-20 -right-20 animate-float" />
-      <div className="ambient-orb w-72 h-72 bg-cyan-500/10 bottom-10 -left-20 animate-float-slow" />
+    <div className="relative min-h-[calc(100vh-4rem)] flex">
+      {/* Left panel – movie collage (desktop only) */}
+      <div className="hidden lg:block lg:w-5/12 xl:w-1/2 relative overflow-hidden shrink-0">
+        {trending && trending.length >= 9 ? (
+          <div className="absolute inset-0 grid grid-cols-3 gap-0">
+            {trending.slice(0, 9).map((movie) => (
+              <div key={movie.id} className="relative overflow-hidden">
+                {movie.poster_path ? (
+                  <img
+                    src={posterUrl(movie.poster_path)}
+                    alt=""
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-muted" />
+                )}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-violet-900 via-purple-900 to-indigo-900" />
+        )}
+        {/* Overlays */}
+        <div className="absolute inset-0 bg-black/50" />
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent to-background/80" />
+        {/* Branding text */}
+        <div className="absolute bottom-0 left-0 right-0 p-10 bg-gradient-to-t from-black/80 to-transparent">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="p-2 rounded-xl bg-gradient-to-br from-violet-500 to-cyan-400">
+              <Film className="h-5 w-5 text-white" />
+            </div>
+            <span className="text-xl font-bold text-white">Cineplex</span>
+          </div>
+          <h2 className="text-2xl font-bold text-white mb-2">Your Cinema, Your Way</h2>
+          <p className="text-white/70 text-sm leading-relaxed max-w-xs">
+            Discover, save, and curate your perfect movie collection — all in one place.
+          </p>
+        </div>
+      </div>
+
+      {/* Right panel – form */}
+      <div className="flex-1 flex items-center justify-center py-12 px-4 relative">
+        {/* Ambient orbs */}
+        <div className="ambient-orb w-96 h-96 bg-violet-500/15 -top-20 -right-20 animate-float" />
+        <div className="ambient-orb w-72 h-72 bg-cyan-500/10 bottom-10 -left-20 animate-float-slow" />
 
       <motion.div
         key={isForgotPassword ? "forgot" : isSignUp ? "signup" : "login"}
         initial={{ opacity: 0, y: reducedMotion ? 0 : 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: reducedMotion ? 0 : 0.5 }}
-        className="w-full max-w-md"
+        className="w-full max-w-md relative"
       >
         <div className="glass rounded-2xl p-8 card-glow">
           {/* Icon */}
@@ -410,6 +460,7 @@ export default function Login() {
           )}
         </div>
       </motion.div>
+      </div>
     </div>
   );
 }

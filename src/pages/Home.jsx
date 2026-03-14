@@ -1,99 +1,178 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { motion, useReducedMotion } from "framer-motion";
-import { Play, UserPlus, Search, Star, BookmarkCheck, TrendingUp } from "lucide-react";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
+import { useQuery } from "@tanstack/react-query";
+import { Play, UserPlus, TrendingUp, ChevronRight, Search, Star, BookmarkCheck } from "lucide-react";
 import { Button } from "../components/ui/button";
+import { Badge } from "../components/ui/badge";
+import MovieCard from "../components/MovieCard";
+import MovieCardSkeleton from "../components/MovieCardSkeleton";
 import { useAuthStore } from "../stores/authStore";
 import { usePageTitle } from "../hooks/usePageTitle";
+import { getTrendingMovies, backdropUrl, posterUrl } from "../services/tmdb";
 
 const features = [
   {
     icon: Search,
-    title: "Search Movies",
-    description: "Browse millions of movies and TV shows from the TMDB database with instant search.",
+    title: "Smart Search",
+    description: "Browse millions of movies from the TMDB database with instant, real-time search.",
     gradient: "from-violet-500 to-purple-600",
     glow: "shadow-violet-500/20",
   },
   {
     icon: Star,
-    title: "View Ratings",
+    title: "Ratings & Reviews",
     description: "See TMDB community ratings, vote counts, and detailed movie statistics.",
     gradient: "from-amber-500 to-orange-600",
     glow: "shadow-amber-500/20",
   },
   {
     icon: BookmarkCheck,
-    title: "Build Watchlist",
-    description: "Save your favorites and build the perfect watchlist for any mood.",
+    title: "Personal Watchlist",
+    description: "Save your favorites, track watched films, and build the perfect watchlist for any mood.",
     gradient: "from-cyan-500 to-blue-600",
     glow: "shadow-cyan-500/20",
   },
 ];
 
+function PosterStrip({ movies, reverse = false }) {
+  if (!movies?.length) return null;
+  const doubled = [...movies, ...movies];
+  return (
+    <div
+      className="relative overflow-hidden"
+      style={{
+        maskImage: "linear-gradient(to right, transparent, black 10%, black 90%, transparent)",
+        WebkitMaskImage: "linear-gradient(to right, transparent, black 10%, black 90%, transparent)",
+      }}
+    >
+      <div className={`flex gap-3 ${reverse ? "animate-marquee-reverse" : "animate-marquee"}`}>
+        {doubled.map((movie, i) => (
+          <Link
+            key={`${movie.id}-${i}`}
+            to={`/movie/${movie.id}`}
+            tabIndex={-1}
+            aria-hidden="true"
+            className="shrink-0 w-24 sm:w-32 aspect-[2/3] rounded-lg overflow-hidden group"
+          >
+            {movie.poster_path ? (
+              <img
+                src={posterUrl(movie.poster_path)}
+                alt=""
+                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 opacity-60 group-hover:opacity-90"
+                loading="lazy"
+              />
+            ) : (
+              <div className="w-full h-full bg-muted rounded-lg" />
+            )}
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function Home() {
   const user = useAuthStore((s) => s.user);
   usePageTitle("Home");
-
   const reducedMotion = useReducedMotion();
+  const [heroIndex, setHeroIndex] = useState(0);
+
+  const { data: trending } = useQuery({
+    queryKey: ["trending"],
+    queryFn: getTrendingMovies,
+    staleTime: 1000 * 60 * 30,
+  });
+
+  useEffect(() => {
+    if (!trending?.length || reducedMotion) return;
+    const timer = setInterval(() => {
+      setHeroIndex((i) => (i + 1) % Math.min(trending.length, 6));
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [trending?.length, reducedMotion]);
+
+  const heroMovie = trending?.[heroIndex];
+  const heroBackdrop = heroMovie ? backdropUrl(heroMovie.backdrop_path) : null;
 
   const container = {
     hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: { staggerChildren: reducedMotion ? 0 : 0.1 },
-    },
+    show: { opacity: 1, transition: { staggerChildren: reducedMotion ? 0 : 0.1 } },
   };
 
   const item = {
-    hidden: { opacity: 0, y: reducedMotion ? 0 : 20 },
-    show: { opacity: 1, y: 0, transition: { duration: reducedMotion ? 0 : 0.5 } },
+    hidden: { opacity: 0, y: reducedMotion ? 0 : 24 },
+    show: { opacity: 1, y: 0, transition: { duration: reducedMotion ? 0 : 0.5, ease: "easeOut" } },
   };
 
   return (
-    <div className="relative overflow-hidden">
-      {/* Ambient orbs */}
-      <div className="ambient-orb w-96 h-96 bg-violet-500/20 -top-48 -left-48 animate-float" />
-      <div className="ambient-orb w-80 h-80 bg-cyan-500/15 top-20 -right-40 animate-float-slow" />
-      <div className="ambient-orb w-64 h-64 bg-purple-500/10 bottom-20 left-1/3 animate-float" />
+    <div className="relative">
+      {/* ── Hero ── */}
+      <section className="relative min-h-[78vh] flex items-center overflow-hidden">
+        {/* Backdrop images */}
+        <AnimatePresence mode="sync">
+          {heroBackdrop && (
+            <motion.div
+              key={heroBackdrop}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: reducedMotion ? 0 : 1.5 }}
+              className="absolute inset-0"
+            >
+              <img
+                src={heroBackdrop}
+                alt=""
+                className="w-full h-full object-cover scale-[1.03]"
+                loading="eager"
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-      {/* Hero */}
-      <section className="relative py-24 sm:py-32 lg:py-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Gradient overlays */}
+        <div className="absolute inset-0 bg-gradient-to-r from-background via-background/85 to-background/10" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent" />
+
+        {/* Content */}
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 w-full">
           <motion.div
             variants={container}
             initial="hidden"
             animate="show"
-            className="text-center max-w-4xl mx-auto"
+            className="max-w-2xl"
           >
-            {/* Pill badge */}
-            <motion.div variants={item} className="flex justify-center mb-8">
-              <div className="glass rounded-full px-4 py-2 flex items-center gap-2 text-sm text-muted-foreground">
+            {/* Trending pill */}
+            <motion.div variants={item} className="mb-6">
+              <div className="inline-flex items-center gap-2 glass rounded-full px-4 py-2 text-sm text-muted-foreground">
                 <TrendingUp className="h-4 w-4 text-primary" />
-                <span>Discover millions of movies</span>
+                <span>
+                  {heroMovie
+                    ? <>Trending now &middot; <span className="text-foreground font-medium">{heroMovie.title}</span></>
+                    : "Discover movies"}
+                </span>
               </div>
             </motion.div>
 
-            {/* Heading */}
             <motion.h1
               variants={item}
               className="text-4xl sm:text-5xl lg:text-7xl font-extrabold tracking-tight leading-tight"
             >
-              Your Ultimate{" "}
+              Your Personal{" "}
               <span className="gradient-text">Movie Watchlist</span>
             </motion.h1>
 
-            {/* Subtitle */}
             <motion.p
               variants={item}
-              className="mt-6 text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed"
+              className="mt-6 text-lg sm:text-xl text-muted-foreground/90 max-w-xl leading-relaxed"
             >
-              Search, discover, and curate your perfect movie collection.
-              Track what you want to watch and never miss a great film again.
+              Search millions of movies, view ratings and details, and build
+              the perfect watchlist — all in one place.
             </motion.p>
 
-            {/* CTAs */}
             <motion.div
               variants={item}
-              className="mt-10 flex flex-col sm:flex-row gap-4 justify-center"
+              className="mt-10 flex flex-col sm:flex-row gap-4"
             >
               <Button
                 size="lg"
@@ -109,7 +188,7 @@ export default function Home() {
                 <Button
                   variant="outline"
                   size="lg"
-                  className="rounded-full text-base px-8"
+                  className="rounded-full text-base px-8 glass border-white/20"
                   asChild
                 >
                   <Link to="/login">
@@ -120,12 +199,100 @@ export default function Home() {
               )}
             </motion.div>
           </motion.div>
+
+          {/* Backdrop dot indicators */}
+          {trending && (
+            <div className="absolute bottom-8 left-4 sm:left-auto sm:right-8 flex gap-1.5">
+              {trending.slice(0, 6).map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setHeroIndex(i)}
+                  aria-label={`Show backdrop ${i + 1}`}
+                  className={`h-1.5 rounded-full transition-all duration-300 ${
+                    i === heroIndex
+                      ? "w-6 bg-white"
+                      : "w-1.5 bg-white/30 hover:bg-white/60"
+                  }`}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
-      {/* Features */}
+      {/* ── Poster Strip ── */}
+      {trending && trending.length >= 10 && (
+        <section className="relative py-8 space-y-3">
+          <PosterStrip movies={trending.slice(0, 10)} />
+          <PosterStrip movies={[...trending].reverse().slice(0, 10)} reverse />
+        </section>
+      )}
+
+      {/* ── Trending This Week ── */}
+      <section className="relative py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center gap-3">
+              <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 border-0 text-white">
+                <TrendingUp className="h-3 w-3 mr-1" />
+                Trending
+              </Badge>
+              <h2 className="text-2xl font-bold">This Week</h2>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="gap-1 text-muted-foreground hover:text-foreground"
+              asChild
+            >
+              <Link to="/search">
+                View all
+                <ChevronRight className="h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
+
+          {trending ? (
+            <motion.div
+              variants={container}
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, margin: "-50px" }}
+              className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6"
+            >
+              {trending.slice(0, 10).map((movie, i) => (
+                <motion.div key={movie.id} variants={item}>
+                  <MovieCard movie={movie} index={i} />
+                </motion.div>
+              ))}
+            </motion.div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
+              {Array.from({ length: 10 }).map((_, i) => (
+                <MovieCardSkeleton key={i} />
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* ── Features ── */}
       <section className="relative py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            className="text-center mb-12"
+          >
+            <h2 className="text-3xl font-extrabold tracking-tight">
+              Everything you need
+            </h2>
+            <p className="text-muted-foreground mt-3 max-w-lg mx-auto">
+              Powered by TMDB for the most up-to-date movie data in the world.
+            </p>
+          </motion.div>
+
           <motion.div
             variants={container}
             initial="hidden"
