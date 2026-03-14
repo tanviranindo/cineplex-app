@@ -16,7 +16,7 @@ import {
 import { toast } from "sonner";
 import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
-import { Spinner } from "../components/ui/spinner";
+import MovieDetailSkeleton from "../components/MovieDetailSkeleton";
 import { getMovieById, posterUrl, backdropUrl } from "../services/tmdb";
 import { useAuthStore } from "../stores/authStore";
 import { useWatchlistStore } from "../stores/watchlistStore";
@@ -60,11 +60,7 @@ export default function MovieDetail() {
   };
 
   if (isLoading) {
-    return (
-      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
-        <Spinner />
-      </div>
-    );
+    return <MovieDetailSkeleton />;
   }
 
   if (isError || !movie) {

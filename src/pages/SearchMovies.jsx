@@ -13,8 +13,8 @@ import {
 import { Input } from "../components/ui/input";
 import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
-import { Spinner } from "../components/ui/spinner";
 import MovieCard from "../components/MovieCard";
+import MovieCardSkeleton from "../components/MovieCardSkeleton";
 import { searchMovies, getTrendingMovies } from "../services/tmdb";
 import { useDebounce } from "../hooks/useDebounce";
 
@@ -111,11 +111,10 @@ export default function SearchMovies() {
         {showSearch ? (
           <div>
             {searchLoading ? (
-              <div className="py-20">
-                <Spinner />
-                <p className="text-center text-muted-foreground mt-4">
-                  Searching movies...
-                </p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
+                {Array.from({ length: 10 }).map((_, i) => (
+                  <MovieCardSkeleton key={i} />
+                ))}
               </div>
             ) : searchError ? (
               <div className="py-20 text-center">
@@ -198,8 +197,10 @@ export default function SearchMovies() {
             </div>
 
             {featuredLoading ? (
-              <div className="py-20">
-                <Spinner />
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
+                {Array.from({ length: 10 }).map((_, i) => (
+                  <MovieCardSkeleton key={i} />
+                ))}
               </div>
             ) : featured && featured.length > 0 ? (
               <motion.div
