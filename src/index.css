@@ -62,8 +62,14 @@
 }
 
 @layer utilities {
+  /* Light mode (default) */
   .glass {
-    @apply bg-white/5 backdrop-blur-xl border border-white/10 shadow-lg;
+    @apply bg-white/70 backdrop-blur-xl border border-black/5 shadow-sm;
+  }
+
+  /* Dark mode */
+  .dark .glass {
+    @apply bg-white/5 border-white/10 shadow-lg;
   }
 
   .gradient-text {
@@ -79,10 +85,18 @@
     @apply absolute -inset-px rounded-xl opacity-0 transition-opacity duration-500 -z-10;
     background: linear-gradient(
       135deg,
+      hsl(262 83% 58% / 0.2),
+      hsl(190 95% 50% / 0.2)
+    );
+    filter: blur(8px);
+  }
+
+  .dark .card-glow::before {
+    background: linear-gradient(
+      135deg,
       hsl(262 83% 58% / 0.4),
       hsl(190 95% 50% / 0.4)
     );
-    filter: blur(8px);
   }
 
   .card-glow:hover::before {
@@ -91,6 +105,11 @@
 
   .ambient-orb {
     @apply absolute rounded-full blur-3xl pointer-events-none;
+    opacity: 0.08;
+  }
+
+  .dark .ambient-orb {
+    opacity: 1;
   }
 
   .noise::after {
@@ -99,9 +118,13 @@
     inset: 0;
     z-index: 9999;
     pointer-events: none;
-    opacity: 0.015;
+    opacity: 0.008;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
     background-repeat: repeat;
+  }
+
+  .dark .noise::after {
+    opacity: 0.015;
   }
 
   .search-glow {
@@ -109,6 +132,11 @@
   }
 
   .search-glow:focus-within {
+    box-shadow: 0 0 0 2px hsl(262 83% 58% / 0.2),
+      0 0 12px hsl(262 83% 58% / 0.08);
+  }
+
+  .dark .search-glow:focus-within {
     box-shadow: 0 0 0 2px hsl(262 83% 58% / 0.3),
       0 0 20px hsl(262 83% 58% / 0.15),
       0 0 40px hsl(262 83% 58% / 0.05);
