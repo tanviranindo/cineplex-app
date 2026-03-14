@@ -21,7 +21,8 @@ import {
   DialogContent,
 } from "../components/ui/dialog";
 import MovieDetailSkeleton from "../components/MovieDetailSkeleton";
-import { getMovieById, posterUrl, backdropUrl } from "../services/tmdb";
+import MovieCard from "../components/MovieCard";
+import { getMovieById, getSimilarMovies, posterUrl, backdropUrl } from "../services/tmdb";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { useAuthStore } from "../stores/authStore";
 import { useWatchlistStore } from "../stores/watchlistStore";
@@ -42,6 +43,12 @@ export default function MovieDetail() {
   const { data: movie, isLoading, isError } = useQuery({
     queryKey: ["movie", id],
     queryFn: () => getMovieById(id),
+  });
+
+  const { data: similar } = useQuery({
+    queryKey: ["similar", id],
+    queryFn: () => getSimilarMovies(id),
+    enabled: !!movie,
   });
 
   usePageTitle(movie?.title);
@@ -298,6 +305,17 @@ export default function MovieDetail() {
           </motion.div>
         </div>
       </div>
+
+      {similar?.length > 0 && (
+        <div className="mt-16 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+          <h2 className="text-xl font-bold mb-6">You Might Also Like</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            {similar.map((m, i) => (
+              <MovieCard key={m.id} movie={m} index={i} />
+            ))}
+          </div>
+        </div>
+      )}
 
       {trailer && (
         <Dialog open={trailerOpen} onOpenChange={setTrailerOpen}>
