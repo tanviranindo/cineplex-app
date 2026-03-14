@@ -30,15 +30,14 @@ export const useWatchlistStore = create((set, get) => ({
 
   add: (movie, userId) => {
     const { items } = get();
-    if (items.some((m) => m.imdbID === movie.imdbID)) return;
+    if (items.some((m) => m.id === movie.id)) return;
     const next = [
       {
-        imdbID: movie.imdbID,
-        Title: movie.Title,
-        Year: movie.Year,
-        Poster: movie.Poster,
-        imdbRating: movie.imdbRating || "N/A",
-        Type: movie.Type || "movie",
+        id: movie.id,
+        title: movie.title,
+        poster_path: movie.poster_path,
+        release_date: movie.release_date,
+        vote_average: movie.vote_average,
         addedAt: Date.now(),
       },
       ...items,
@@ -47,14 +46,14 @@ export const useWatchlistStore = create((set, get) => ({
     set({ items: next });
   },
 
-  remove: (imdbID, userId) => {
+  remove: (movieId, userId) => {
     const { items } = get();
-    const next = items.filter((m) => m.imdbID !== imdbID);
+    const next = items.filter((m) => m.id !== movieId);
     persist(userId, next);
     set({ items: next });
   },
 
-  isInList: (imdbID) => {
-    return get().items.some((m) => m.imdbID === imdbID);
+  isInList: (movieId) => {
+    return get().items.some((m) => m.id === movieId);
   },
 }));

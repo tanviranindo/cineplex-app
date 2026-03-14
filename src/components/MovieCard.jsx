@@ -15,6 +15,7 @@ import {
 } from "./ui/dialog";
 import { useAuthStore } from "../stores/authStore";
 import { useWatchlistStore } from "../stores/watchlistStore";
+import { posterUrl } from "../services/tmdb";
 
 const PLACEHOLDER =
   "https://via.placeholder.com/300x450/1a1a2e/8b5cf6?text=No+Poster";
@@ -24,10 +25,21 @@ export default function MovieCard({ movie, index = 0, showRemove = false }) {
   const user = useAuthStore((s) => s.user);
   const add = useWatchlistStore((s) => s.add);
   const remove = useWatchlistStore((s) => s.remove);
-  const isInList = useWatchlistStore((s) => s.isInList(movie.imdbID));
+  const isInList = useWatchlistStore((s) => s.isInList(movie.id));
 
-  const poster =
-    movie.Poster && movie.Poster !== "N/A" ? movie.Poster : PLACEHOLDER;
+  const poster = posterUrl(movie.poster_path) || PLACEHOLDER;
+  const title = movie.title || movie.Title || "Untitled";
+  const year = (movie.release_date || movie.Year || "").slice(0, 4);
+  const rating = movie.vote_average ? movie.vote_average.toFixed(1) : null;
+  const movieId = movie.id || movie.tmdbId;
+
+  const watchlistItem = {
+    id: movieId,
+    title,
+    poster_path: movie.poster_path,
+    release_date: movie.release_date,
+    vote_average: movie.vote_average,
+  };
 
   const handleAdd = (e) => {
     e.preventDefault();
@@ -36,14 +48,14 @@ export default function MovieCard({ movie, index = 0, showRemove = false }) {
       toast.error("Please sign in to add movies to your watchlist");
       return;
     }
-    add(movie, user.id);
-    toast.success(`"${movie.Title}" added to watchlist`);
+    add(watchlistItem, user.id);
+    toast.success(`"${title}" added to watchlist`);
   };
 
   const handleRemoveConfirm = () => {
     if (!user) return;
-    remove(movie.imdbID, user.id);
-    toast.success(`"${movie.Title}" removed from watchlist`);
+    remove(movieId, user.id);
+    toast.success(`"${title}" removed from watchlist`);
     setRemoveOpen(false);
   };
 
@@ -54,36 +66,31 @@ export default function MovieCard({ movie, index = 0, showRemove = false }) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: index * 0.05 }}
       >
-        <Link to={`/movie/${movie.imdbID}`} className="block group">
+        <Link to={`/movie/${movieId}`} className="block group">
           <div className="card-glow rounded-xl overflow-hidden glass">
-            {/* Poster container */}
             <div className="relative aspect-[2/3] overflow-hidden">
               <img
                 src={poster}
-                alt={movie.Title}
+                alt={title}
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                 loading="lazy"
               />
 
-              {/* Gradient overlay on hover */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
-              {/* Year badge */}
-              {movie.Year && (
+              {year && (
                 <Badge className="absolute top-3 right-3 glass text-xs font-medium text-white border-white/20">
-                  {movie.Year}
+                  {year}
                 </Badge>
               )}
 
-              {/* Rating badge */}
-              {movie.imdbRating && movie.imdbRating !== "N/A" && (
+              {rating && (
                 <Badge className="absolute top-3 left-3 bg-amber-500/20 backdrop-blur-xl border border-amber-400/30 text-amber-300 text-xs font-medium">
                   <Star className="h-3 w-3 mr-1 fill-amber-400 text-amber-400" />
-                  {movie.imdbRating}
+                  {rating}
                 </Badge>
               )}
 
-              {/* View Details overlay */}
               <div className="absolute inset-x-0 bottom-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-500">
                 <div className="flex items-center justify-center gap-2 text-white text-sm font-medium">
                   <Eye className="h-4 w-4" />
@@ -92,13 +99,11 @@ export default function MovieCard({ movie, index = 0, showRemove = false }) {
               </div>
             </div>
 
-            {/* Info */}
             <div className="p-4 space-y-3">
               <h3 className="font-semibold text-sm leading-snug line-clamp-2 group-hover:text-primary transition-colors duration-300">
-                {movie.Title}
+                {title}
               </h3>
 
-              {/* Actions */}
               <div
                 className="flex gap-2"
                 onClick={(e) => e.preventDefault()}
@@ -144,13 +149,12 @@ export default function MovieCard({ movie, index = 0, showRemove = false }) {
         </Link>
       </motion.div>
 
-      {/* Remove confirmation dialog */}
       <Dialog open={removeOpen} onOpenChange={setRemoveOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Remove from Watchlist</DialogTitle>
             <DialogDescription>
-              Are you sure you want to remove "{movie.Title}" from your
+              Are you sure you want to remove "{title}" from your
               watchlist? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>

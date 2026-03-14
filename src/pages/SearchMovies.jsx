@@ -15,7 +15,7 @@ import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
 import { Spinner } from "../components/ui/spinner";
 import MovieCard from "../components/MovieCard";
-import { searchMovies, getFeaturedMovies } from "../services/omdb";
+import { searchMovies, getTrendingMovies } from "../services/tmdb";
 import { useDebounce } from "../hooks/useDebounce";
 
 const container = {
@@ -43,12 +43,12 @@ export default function SearchMovies() {
   });
 
   const { data: featured, isLoading: featuredLoading } = useQuery({
-    queryKey: ["featured"],
-    queryFn: getFeaturedMovies,
+    queryKey: ["trending"],
+    queryFn: getTrendingMovies,
     staleTime: 1000 * 60 * 30,
   });
 
-  const totalPages = searchData ? Math.ceil(searchData.total / 10) : 0;
+  const totalPages = searchData?.totalPages || 0;
   const showSearch = debouncedQuery.trim().length >= 2;
 
   const handleQueryChange = (e) => {
@@ -147,7 +147,7 @@ export default function SearchMovies() {
                   className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6"
                 >
                   {searchData.results.map((movie, i) => (
-                    <MovieCard key={movie.imdbID} movie={movie} index={i} />
+                    <MovieCard key={movie.id} movie={movie} index={i} />
                   ))}
                 </motion.div>
 
@@ -194,7 +194,7 @@ export default function SearchMovies() {
                 <Sparkles className="h-3 w-3 mr-1" />
                 Featured
               </Badge>
-              <h2 className="text-xl font-semibold">Top Rated Movies</h2>
+              <h2 className="text-xl font-semibold">Trending This Week</h2>
             </div>
 
             {featuredLoading ? (
@@ -209,7 +209,7 @@ export default function SearchMovies() {
                 className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6"
               >
                 {featured.map((movie, i) => (
-                  <MovieCard key={movie.imdbID} movie={movie} index={i} />
+                  <MovieCard key={movie.id} movie={movie} index={i} />
                 ))}
               </motion.div>
             ) : null}
