@@ -126,7 +126,7 @@ export default function MovieCard({ movie, index = 0, showRemove = false, addedA
               <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/30 to-transparent pointer-events-none" />
 
               {year && (
-                <Badge className="absolute top-3 right-3 glass text-xs font-medium text-white border-white/20">
+                <Badge className="absolute top-3 right-3 bg-black/50 backdrop-blur-xl border border-white/20 text-white text-xs font-medium">
                   {year}
                 </Badge>
               )}

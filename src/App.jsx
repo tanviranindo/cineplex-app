@@ -1,5 +1,6 @@
 import { useEffect, lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { Toaster } from "sonner";
 import Layout from "./components/Layout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PageSkeleton from "./components/PageSkeleton";
@@ -21,10 +22,12 @@ export default function App() {
   const user = useAuthStore((s) => s.user);
   const theme = useThemeStore((s) => s.theme);
   const setTheme = useThemeStore((s) => s.setTheme);
+  const loadFromFirestore = useThemeStore((s) => s.loadFromFirestore);
+  const setUid = useThemeStore((s) => s.setUid);
   const subscribe = useWatchlistStore((s) => s.subscribe);
   const unsubscribeAll = useWatchlistStore((s) => s.unsubscribeAll);
 
-  // Apply theme on mount
+  // Apply default theme on mount
   useEffect(() => {
     setTheme(theme);
   }, []);
@@ -35,10 +38,17 @@ export default function App() {
     return unsub;
   }, []);
 
-  // Subscribe/unsubscribe watchlist based on auth state
+  // Load theme from Firestore and subscribe watchlist on auth change
   useEffect(() => {
-    if (user?.id) subscribe(user.id);
-    else unsubscribeAll();
+    if (user?.id) {
+      setUid(user.id);
+      loadFromFirestore(user.id);
+      subscribe(user.id);
+    } else {
+      setUid(null);
+      loadFromFirestore(null);
+      unsubscribeAll();
+    }
   }, [user?.id]);
 
   return (
@@ -72,6 +82,12 @@ export default function App() {
         </Routes>
       </Suspense>
       <LoginModal />
+      <Toaster
+        position="bottom-right"
+        theme={theme}
+        richColors
+        offset="80px"
+      />
     </BrowserRouter>
   );
 }

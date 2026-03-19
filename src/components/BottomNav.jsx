@@ -15,7 +15,7 @@ export default function BottomNav() {
   const items = ALL_ITEMS.filter((item) => !item.requiresAuth || user)
 
   return (
-    <nav className="fixed bottom-0 inset-x-0 z-50 md:hidden glass border-t border-white/10">
+    <nav className="fixed bottom-0 inset-x-0 z-50 md:hidden glass border-t border-border/50">
       <div className="flex items-center justify-around h-16 px-2">
         {items.map(({ to, icon: Icon, label }) => (
           <NavLink

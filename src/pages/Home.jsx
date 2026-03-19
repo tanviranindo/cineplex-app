@@ -188,7 +188,7 @@ export default function Home() {
                 <Button
                   variant="outline"
                   size="lg"
-                  className="rounded-full text-base px-8 glass border-white/20"
+                  className="rounded-full text-base px-8 glass border-border/50"
                   asChild
                 >
                   <Link to="/login">
@@ -210,8 +210,8 @@ export default function Home() {
                   aria-label={`Show backdrop ${i + 1}`}
                   className={`h-1.5 rounded-full transition-all duration-300 ${
                     i === heroIndex
-                      ? "w-6 bg-white"
-                      : "w-1.5 bg-white/30 hover:bg-white/60"
+                      ? "w-6 bg-foreground"
+                      : "w-1.5 bg-foreground/30 hover:bg-foreground/60"
                   }`}
                 />
               ))}
@@ -302,7 +302,7 @@ export default function Home() {
           >
             {features.map((feature) => (
               <motion.div key={feature.title} variants={item}>
-                <div className="glass rounded-2xl p-8 h-full card-glow hover:border-white/20 transition-all duration-500">
+                <div className="glass rounded-2xl p-8 h-full card-glow hover:border-border transition-all duration-500">
                   <div
                     className={`inline-flex p-3 rounded-xl bg-gradient-to-br ${feature.gradient} shadow-lg ${feature.glow} mb-6`}
                   >
