@@ -3,11 +3,10 @@
 Cineplex is a React movie discovery and watchlist app powered by TMDB and Firebase.  
 It supports account-based watchlists, advanced browse filters, movie/person detail pages, and a polished responsive UI with dark mode.
 
-Preview
+## Preview
 
-[https://mywishlist.vercel.app] (https://mywishlist.vercel.app)
-or,
-[https://cineplex-app.vercel.app/] (https://cineplex-app.vercel.app)
+[https://mywishlist.vercel.app](https://mywishlist.vercel.app)
+[https://cineplex-app.vercel.app](https://cineplex-app.vercel.app)
 
 ## Features
 
