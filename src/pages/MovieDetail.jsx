@@ -31,6 +31,34 @@ import { queryKeys } from "../lib/queryKeys";
 const PLACEHOLDER =
   "https://via.placeholder.com/300x450/1a1a2e/8b5cf6?text=No+Poster";
 
+// Deep-link mapping for major streaming providers (TMDB provider_id → base URL)
+const PROVIDER_URLS = {
+  8:   (title) => `https://www.netflix.com/search?q=${encodeURIComponent(title)}`,          // Netflix
+  9:   (title) => `https://www.amazon.com/s?k=${encodeURIComponent(title)}&i=instant-video`, // Amazon Prime Video
+  337: (title) => `https://www.disneyplus.com/search/${encodeURIComponent(title)}`,          // Disney+
+  15:  (title) => `https://www.hulu.com/search?q=${encodeURIComponent(title)}`,              // Hulu
+  350: (title) => `https://tv.apple.com/search?term=${encodeURIComponent(title)}`,           // Apple TV+
+  2:   (title) => `https://tv.apple.com/search?term=${encodeURIComponent(title)}`,           // Apple TV
+  384: (title) => `https://play.max.com/search?q=${encodeURIComponent(title)}`,              // HBO Max
+  531: (title) => `https://www.paramountplus.com/search/?q=${encodeURIComponent(title)}`,    // Paramount+
+  386: (title) => `https://www.peacocktv.com/search?q=${encodeURIComponent(title)}`,         // Peacock
+  283: (title) => `https://www.crunchyroll.com/search?q=${encodeURIComponent(title)}`,       // Crunchyroll
+  387: (title) => `https://www.peacocktv.com/search?q=${encodeURIComponent(title)}`,         // Peacock Premium
+  1899:(title) => `https://play.max.com/search?q=${encodeURIComponent(title)}`,              // Max
+  192: (title) => `https://www.youtube.com/results?search_query=${encodeURIComponent(title + " full movie")}`, // YouTube
+  3:   (title) => `https://play.google.com/store/search?q=${encodeURIComponent(title)}&c=movies`, // Google Play Movies
+  10:  (title) => `https://www.amazon.com/s?k=${encodeURIComponent(title)}&i=instant-video`, // Amazon Video
+  7:   (title) => `https://www.vudu.com/content/movies/search?searchString=${encodeURIComponent(title)}`, // Vudu
+  68:  (title) => `https://www.microsoft.com/en-us/search/result.aspx?q=${encodeURIComponent(title)}`, // Microsoft Store
+};
+
+function getProviderUrl(providerId, providerName, movieTitle) {
+  const urlFn = PROVIDER_URLS[providerId];
+  if (urlFn) return urlFn(movieTitle);
+  // Fallback: Google search for "watch {title} on {provider}"
+  return `https://www.google.com/search?q=${encodeURIComponent(`watch ${movieTitle} on ${providerName}`)}`;
+}
+
 export default function MovieDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -234,6 +262,74 @@ export default function MovieDetail() {
                   </Badge>
                 )}
               </div>
+
+              {/* Actions — prominent at top */}
+              <div className="flex flex-wrap items-center gap-2 mt-5">
+                {trailer && (
+                  <Button onClick={() => setTrailerOpen(true)} className="shadow-lg shadow-primary/25">
+                    <Play className="h-4 w-4 mr-2 fill-current" />
+                    Watch Trailer
+                  </Button>
+                )}
+                {user && (
+                  isInList ? (
+                    <Button
+                      variant="outline"
+                      onClick={handleRemove}
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Remove
+                    </Button>
+                  ) : (
+                    <Button
+                      variant={trailer ? "outline" : "default"}
+                      className={!trailer ? "shadow-lg shadow-primary/25" : ""}
+                      onClick={handleAdd}
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Watchlist
+                    </Button>
+                  )
+                )}
+                {user && isInList && (() => {
+                  const opt = STATUS_OPTIONS.find((o) => o.value === currentStatus);
+                  const Icon = opt?.icon || Bookmark;
+                  return (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Badge
+                          variant="secondary"
+                          className="cursor-pointer gap-1.5 px-3 py-1.5 text-sm font-medium hover:bg-secondary/80 transition-colors"
+                        >
+                          <Icon className="h-3.5 w-3.5" />
+                          {opt?.label || "To Watch"}
+                        </Badge>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent>
+                        {STATUS_OPTIONS.map((o) => (
+                          <DropdownMenuItem
+                            key={o.value}
+                            onClick={async () => {
+                              try {
+                                await setStatus(movieId, user.id, o.value);
+                              } catch {
+                                toast.error("Failed to update watchlist");
+                              }
+                            }}
+                            className={currentStatus === o.value ? "bg-accent" : ""}
+                          >
+                            <o.icon className="h-4 w-4 mr-2" />
+                            {o.label}
+                            {currentStatus === o.value && (
+                              <Check className="h-3.5 w-3.5 ml-auto text-primary" />
+                            )}
+                          </DropdownMenuItem>
+                        ))}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  );
+                })()}
+              </div>
             </div>
 
             {/* Genres */}
@@ -258,7 +354,7 @@ export default function MovieDetail() {
               </div>
             )}
 
-            {/* Streaming Providers — fully inline */}
+            {/* Streaming Providers — clickable links to services */}
             {providers && (providers.stream.length > 0 || providers.rent.length > 0 || providers.buy.length > 0) && (
               <div className="glass rounded-xl p-5">
                 <div className="flex items-center gap-2 mb-4">
@@ -283,28 +379,33 @@ export default function MovieDetail() {
                           <p className="text-xs font-medium text-muted-foreground">{group.label}</p>
                         </div>
                         <div className="flex flex-wrap gap-2">
-                          {group.items.map((p) => (
-                            <div
-                              key={p.provider_id}
-                              className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg border border-border/50 bg-secondary/30 hover:bg-secondary/60 transition-colors"
-                            >
-                              <img
-                                src={posterUrl(p.logo_path, "w92")}
-                                alt={p.provider_name}
-                                className="w-6 h-6 rounded-md object-cover"
-                              />
-                              <span className="text-xs font-medium">{p.provider_name}</span>
-                            </div>
-                          ))}
+                          {group.items.map((p) => {
+                            const url = getProviderUrl(p.provider_id, p.provider_name, movie.title);
+                            return (
+                              <a
+                                key={p.provider_id}
+                                href={url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg border border-border/50 bg-secondary/30 hover:bg-primary/10 hover:border-primary/30 transition-colors group/provider"
+                              >
+                                <img
+                                  src={posterUrl(p.logo_path, "w92")}
+                                  alt={p.provider_name}
+                                  className="w-6 h-6 rounded-md object-cover"
+                                />
+                                <span className="text-xs font-medium group-hover/provider:text-primary transition-colors">{p.provider_name}</span>
+                                <ExternalLink className="h-3 w-3 text-muted-foreground/40 group-hover/provider:text-primary/60 transition-colors" />
+                              </a>
+                            );
+                          })}
                         </div>
                       </div>
                     ))}
                 </div>
-                {providers.link && (
-                  <p className="text-[10px] text-muted-foreground/50 mt-4 pt-3 border-t border-border/30">
-                    Availability data provided by JustWatch
-                  </p>
-                )}
+                <p className="text-[10px] text-muted-foreground/50 mt-4 pt-3 border-t border-border/30">
+                  Links open each service directly. Availability data by JustWatch.
+                </p>
               </div>
             )}
 
@@ -420,79 +521,6 @@ export default function MovieDetail() {
               </div>
             )}
 
-            {/* Actions */}
-            <div className="flex flex-wrap gap-3 pt-2">
-              {user && (
-                isInList ? (
-                  <Button
-                    variant="destructive"
-                    className="shadow-lg shadow-destructive/25"
-                    onClick={handleRemove}
-                  >
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Remove from Watchlist
-                  </Button>
-                ) : (
-                  <Button
-                    className="shadow-lg shadow-primary/25"
-                    onClick={handleAdd}
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add to Watchlist
-                  </Button>
-                )
-              )}
-              {user && isInList && (() => {
-                const opt = STATUS_OPTIONS.find((o) => o.value === currentStatus);
-                const Icon = opt?.icon || Bookmark;
-                return (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Badge
-                        variant="secondary"
-                        className="cursor-pointer gap-1.5 px-3 py-1.5 text-sm font-medium hover:bg-secondary/80 transition-colors"
-                      >
-                        <Icon className="h-3.5 w-3.5" />
-                        {opt?.label || "To Watch"}
-                      </Badge>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent>
-                      {STATUS_OPTIONS.map((o) => (
-                        <DropdownMenuItem
-                          key={o.value}
-                          onClick={async () => {
-                            try {
-                              await setStatus(movieId, user.id, o.value);
-                            } catch {
-                              toast.error("Failed to update watchlist");
-                            }
-                          }}
-                          className={currentStatus === o.value ? "bg-accent" : ""}
-                        >
-                          <o.icon className="h-4 w-4 mr-2" />
-                          {o.label}
-                          {currentStatus === o.value && (
-                            <Check className="h-3.5 w-3.5 ml-auto text-primary" />
-                          )}
-                        </DropdownMenuItem>
-                      ))}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                );
-              })()}
-              {trailer && (
-                <Button variant="outline" onClick={() => setTrailerOpen(true)}>
-                  <Play className="h-4 w-4 mr-2" />
-                  Watch Trailer
-                </Button>
-              )}
-              <Button variant="outline" asChild>
-                <Link to="/search">
-                  <Search className="h-4 w-4 mr-2" />
-                  Back to Search
-                </Link>
-              </Button>
-            </div>
           </motion.div>
         </div>
       </div>
