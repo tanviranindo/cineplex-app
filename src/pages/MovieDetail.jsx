@@ -486,34 +486,35 @@ export default function MovieDetail() {
                   <Users className="h-3 w-3" />
                   Cast
                 </h3>
-                <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide sm:grid sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 sm:overflow-visible sm:pb-0">
-                  {movie.castDetailed.map((c) => (
-                    <Link
-                      key={c.id}
-                      to={`/person/${c.id}`}
-                      className="flex flex-col items-center gap-2 shrink-0 w-20 sm:w-auto group"
-                    >
-                      {c.profilePath ? (
-                        <img
-                          src={profileUrl(c.profilePath)}
-                          alt={c.name}
-                          className="w-14 h-14 rounded-full object-cover ring-2 ring-transparent group-hover:ring-primary/50 transition-all"
-                        />
-                      ) : (
-                        <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center ring-2 ring-transparent group-hover:ring-primary/50 transition-all">
-                          <Users className="h-5 w-5 text-muted-foreground" />
-                        </div>
-                      )}
-                      <span className="text-[11px] font-medium text-center leading-tight line-clamp-2 group-hover:text-primary transition-colors">
-                        {c.name}
-                      </span>
-                      {c.character && !/^\d+$/.test(c.character) && (
-                        <span className="text-[10px] text-muted-foreground text-center leading-tight line-clamp-1">
-                          {c.character}
+                <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide sm:grid sm:grid-cols-4 md:grid-cols-5 sm:overflow-visible sm:pb-0">
+                  {movie.castDetailed.map((c) => {
+                    const charName = c.character && !/^\d+$/.test(c.character) ? c.character : null;
+                    return (
+                      <Link
+                        key={c.id}
+                        to={`/person/${c.id}`}
+                        className="flex flex-col items-center shrink-0 w-20 sm:w-auto group"
+                      >
+                        {c.profilePath ? (
+                          <img
+                            src={profileUrl(c.profilePath)}
+                            alt={c.name}
+                            className="w-14 h-14 rounded-full object-cover ring-2 ring-transparent group-hover:ring-primary/50 transition-all"
+                          />
+                        ) : (
+                          <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center ring-2 ring-transparent group-hover:ring-primary/50 transition-all">
+                            <Users className="h-5 w-5 text-muted-foreground" />
+                          </div>
+                        )}
+                        <span className="mt-2 text-[11px] font-medium text-center leading-tight line-clamp-2 min-h-[2rem] group-hover:text-primary transition-colors">
+                          {c.name}
                         </span>
-                      )}
-                    </Link>
-                  ))}
+                        <span className="text-[10px] text-muted-foreground text-center leading-tight line-clamp-1 min-h-[1rem]">
+                          {charName || "\u00A0"}
+                        </span>
+                      </Link>
+                    );
+                  })}
                 </div>
               </div>
             )}
