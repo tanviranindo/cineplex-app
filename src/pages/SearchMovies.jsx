@@ -7,6 +7,8 @@ import {
   Sparkles,
   Film,
   AlertTriangle,
+  Clock,
+  Trash2,
 } from "lucide-react";
 import { Input } from "../components/ui/input";
 import { Badge } from "../components/ui/badge";
@@ -17,6 +19,7 @@ import { useDebounce } from "../hooks/useDebounce";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { queryKeys } from "../lib/queryKeys";
 import { useIntersectionObserver } from "../hooks/useIntersectionObserver";
+import { usePreferencesStore } from "../stores/preferencesStore";
 
 const container = {
   hidden: { opacity: 0 },
@@ -31,6 +34,10 @@ export default function SearchMovies() {
   const [query, setQuery] = useState("");
   const [activeGenre, setActiveGenre] = useState(null);
   const inputRef = useRef(null);
+  const searchHistory = usePreferencesStore((s) => s.searchHistory);
+  const addSearchQuery = usePreferencesStore((s) => s.addSearchQuery);
+  const removeSearchQuery = usePreferencesStore((s) => s.removeSearchQuery);
+  const clearSearchHistory = usePreferencesStore((s) => s.clearSearchHistory);
 
   useEffect(() => {
     const handleKey = (e) => {
@@ -116,9 +123,15 @@ export default function SearchMovies() {
         showGenreDiscover, hasNextGenre, fetchingNextGenre, fetchNextGenre])
   );
 
+  // Save successful search queries to history
+  useEffect(() => {
+    if (showSearch && searchTotal > 0) {
+      addSearchQuery(debouncedQuery);
+    }
+  }, [debouncedQuery, searchTotal]);
+
   const handleQueryChange = (e) => {
     setQuery(e.target.value);
-    // no setPage needed
   };
 
   const handleGenreClick = (genreId) => {
@@ -175,7 +188,7 @@ export default function SearchMovies() {
               placeholder="Search movies by title..."
               value={query}
               onChange={handleQueryChange}
-              className="h-14 pl-12 pr-12 text-lg rounded-xl border-white/10 bg-card"
+              className="h-14 pl-12 pr-12 text-lg rounded-xl border-border/50 bg-card"
             />
             {query && (
               <button
@@ -286,8 +299,46 @@ export default function SearchMovies() {
             )}
           </div>
         ) : (
-          /* Featured movies */
+          /* Search history + Featured movies */
           <div className="mt-6">
+            {/* Search History */}
+            {searchHistory.length > 0 && (
+              <div className="mb-8">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-muted-foreground" />
+                    <h3 className="text-sm font-semibold text-muted-foreground">Recent Searches</h3>
+                  </div>
+                  <button
+                    onClick={clearSearchHistory}
+                    className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Clear all
+                  </button>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {searchHistory.map((q) => (
+                    <div
+                      key={q}
+                      className="group flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border border-border bg-transparent text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-all cursor-pointer"
+                    >
+                      <button onClick={() => setQuery(q)} className="flex items-center gap-1.5">
+                        <Search className="h-3 w-3" />
+                        {q}
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); removeSearchQuery(q); }}
+                        className="opacity-0 group-hover:opacity-100 transition-opacity"
+                        aria-label={`Remove "${q}" from history`}
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div className="flex items-center gap-2 mb-6">
               <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 border-0 text-white">
                 <Sparkles className="h-3 w-3 mr-1" />

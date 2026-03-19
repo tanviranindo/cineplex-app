@@ -2,12 +2,13 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
-import { Play, UserPlus, TrendingUp, ChevronRight, Search, Star, BookmarkCheck } from "lucide-react";
+import { Play, UserPlus, TrendingUp, ChevronRight, Search, Star, BookmarkCheck, Clock } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
 import MovieCard from "../components/MovieCard";
 import MovieCardSkeleton from "../components/MovieCardSkeleton";
 import { useAuthStore } from "../stores/authStore";
+import { usePreferencesStore } from "../stores/preferencesStore";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { getTrendingMovies, backdropUrl, posterUrl } from "../services/tmdb";
 
@@ -74,6 +75,7 @@ function PosterStrip({ movies, reverse = false }) {
 
 export default function Home() {
   const user = useAuthStore((s) => s.user);
+  const recentlyViewed = usePreferencesStore((s) => s.recentlyViewed);
   usePageTitle("Home");
   const reducedMotion = useReducedMotion();
   const [heroIndex, setHeroIndex] = useState(0);
@@ -191,7 +193,7 @@ export default function Home() {
                   className="rounded-full text-base px-8 glass border-border/50"
                   asChild
                 >
-                  <Link to="/login">
+                  <Link to="/auth/signup">
                     <UserPlus className="h-4 w-4 mr-2" />
                     Create Account
                   </Link>
@@ -225,6 +227,36 @@ export default function Home() {
         <section className="relative py-8 space-y-3">
           <PosterStrip movies={trending.slice(0, 10)} />
           <PosterStrip movies={[...trending].reverse().slice(0, 10)} reverse />
+        </section>
+      )}
+
+      {/* ── Recently Viewed ── */}
+      {recentlyViewed.length > 0 && (
+        <section className="relative py-16">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center gap-3">
+                <Badge variant="secondary">
+                  <Clock className="h-3 w-3 mr-1" />
+                  Recently Viewed
+                </Badge>
+                <h2 className="text-2xl font-bold">Continue Watching</h2>
+              </div>
+            </div>
+            <motion.div
+              variants={container}
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, margin: "-50px" }}
+              className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6"
+            >
+              {recentlyViewed.slice(0, 10).map((movie, i) => (
+                <motion.div key={movie.id} variants={item}>
+                  <MovieCard movie={movie} index={i} />
+                </motion.div>
+              ))}
+            </motion.div>
+          </div>
         </section>
       )}
 

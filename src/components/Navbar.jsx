@@ -36,7 +36,7 @@ export default function Navbar() {
   const toggle = useThemeStore((s) => s.toggle);
   const navigate = useNavigate();
   const location = useLocation();
-  const isLoginPage = location.pathname === "/login";
+  const isLoginPage = location.pathname.startsWith("/auth/");
 
   const initials = user?.name
     ? user.name
@@ -176,7 +176,7 @@ export default function Navbar() {
             ) : (
               !isLoginPage && (
                 <Button size="sm" asChild>
-                  <Link to="/login">Sign In</Link>
+                  <Link to="/auth/signin">Sign In</Link>
                 </Button>
               )
             )}
@@ -285,7 +285,7 @@ export default function Navbar() {
                 ) : (
                   !isLoginPage && (
                     <Link
-                      to="/login"
+                      to="/auth/signin"
                       onClick={() => setMobileOpen(false)}
                       className="block"
                     >

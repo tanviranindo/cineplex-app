@@ -17,9 +17,15 @@ export const useWatchlistStore = create((set, get) => ({
       collection(db, 'users', uid, 'watchlist'),
       orderBy('addedAt', 'desc')
     )
-    const unsub = onSnapshot(q, (snap) => {
-      set({ items: snap.docs.map((d) => d.data()) })
-    })
+    const unsub = onSnapshot(
+      q,
+      (snap) => {
+        set({ items: snap.docs.map((d) => d.data()) })
+      },
+      (error) => {
+        console.warn('[watchlist] Snapshot error:', error.message)
+      }
+    )
     set({ _unsub: unsub })
   },
 

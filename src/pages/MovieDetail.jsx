@@ -1,7 +1,7 @@
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   ArrowLeft, Star, Clock, Calendar, Film, Plus, Play, Trash2, Search,
   ExternalLink, Bookmark, CheckCircle, Heart, Check,
@@ -25,6 +25,7 @@ import {
 import { usePageTitle } from "../hooks/usePageTitle";
 import { useAuthStore } from "../stores/authStore";
 import { useWatchlistStore } from "../stores/watchlistStore";
+import { usePreferencesStore } from "../stores/preferencesStore";
 import { queryKeys } from "../lib/queryKeys";
 
 const PLACEHOLDER =
@@ -62,6 +63,11 @@ export default function MovieDetail() {
   });
 
   usePageTitle(movie?.title);
+
+  const addRecentlyViewed = usePreferencesStore((s) => s.addRecentlyViewed);
+  useEffect(() => {
+    if (movie) addRecentlyViewed(movie);
+  }, [movie?.id]);
 
   const handleAdd = async () => {
     if (!user) {

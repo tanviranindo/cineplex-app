@@ -6,6 +6,6 @@ export default function ProtectedRoute({ children }) {
   const user = useAuthStore((s) => s.user)
   const authReady = useAuthStore((s) => s.authReady)
   if (!authReady) return <PageSkeleton />
-  if (!user) return <Navigate to="/login" replace />
+  if (!user) return <Navigate to="/auth/signin" replace />
   return children
 }

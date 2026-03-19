@@ -8,9 +8,11 @@ import LoginModal from "./components/LoginModal";
 import { useAuthStore } from "./stores/authStore";
 import { useWatchlistStore } from "./stores/watchlistStore";
 import { useThemeStore } from "./stores/themeStore";
+import { usePreferencesStore } from "./stores/preferencesStore";
 
 const Home = lazy(() => import("./pages/Home"));
-const Login = lazy(() => import("./pages/Login"));
+const SignIn = lazy(() => import("./pages/SignIn"));
+const SignUp = lazy(() => import("./pages/SignUp"));
 const SearchMovies = lazy(() => import("./pages/SearchMovies"));
 const MovieDetail = lazy(() => import("./pages/MovieDetail"));
 const Watchlist = lazy(() => import("./pages/Watchlist"));
@@ -26,6 +28,7 @@ export default function App() {
   const setUid = useThemeStore((s) => s.setUid);
   const subscribe = useWatchlistStore((s) => s.subscribe);
   const unsubscribeAll = useWatchlistStore((s) => s.unsubscribeAll);
+  const loadPreferences = usePreferencesStore((s) => s.load);
 
   // Apply default theme on mount
   useEffect(() => {
@@ -43,10 +46,12 @@ export default function App() {
     if (user?.id) {
       setUid(user.id);
       loadFromFirestore(user.id);
+      loadPreferences(user.id);
       subscribe(user.id);
     } else {
       setUid(null);
       loadFromFirestore(null);
+      loadPreferences(null);
       unsubscribeAll();
     }
   }, [user?.id]);
@@ -57,7 +62,10 @@ export default function App() {
         <Routes>
           <Route element={<Layout />}>
             <Route path="/" element={<Home />} />
-            <Route path="/login" element={<Login />} />
+            <Route path="/auth/signin" element={<SignIn />} />
+            <Route path="/auth/signup" element={<SignUp />} />
+            {/* Redirect old /login route */}
+            <Route path="/login" element={<Navigate to="/auth/signin" replace />} />
             <Route path="/search" element={<SearchMovies />} />
             <Route path="/browse" element={<Browse />} />
             <Route path="/movie/:id" element={<MovieDetail />} />

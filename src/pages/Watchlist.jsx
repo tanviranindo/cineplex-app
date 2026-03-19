@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Film, Plus, Search, ArrowUpDown } from "lucide-react";
@@ -14,6 +13,7 @@ import {
 } from "../components/ui/select";
 import MovieCard from "../components/MovieCard";
 import { useWatchlistStore } from "../stores/watchlistStore";
+import { usePreferencesStore } from "../stores/preferencesStore";
 import { usePageTitle } from "../hooks/usePageTitle";
 
 const TAB_STATUS = {
@@ -64,8 +64,10 @@ const container = {
 export default function Watchlist() {
   usePageTitle("My Watchlist");
   const items = useWatchlistStore((s) => s.items);
-  const [activeTab, setActiveTab] = useState("all");
-  const [sortBy, setSortBy] = useState("added");
+  const activeTab = usePreferencesStore((s) => s.watchlistTab);
+  const sortBy = usePreferencesStore((s) => s.watchlistSort);
+  const setActiveTab = usePreferencesStore((s) => s.setWatchlistTab);
+  const setSortBy = usePreferencesStore((s) => s.setWatchlistSort);
 
   // Global empty state
   if (items.length === 0) {

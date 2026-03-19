@@ -13,7 +13,27 @@ import {
   reauthenticateWithPopup,
   EmailAuthProvider,
 } from 'firebase/auth'
-import { auth, googleProvider } from '../services/firebase'
+import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore'
+import { auth, db, googleProvider } from '../services/firebase'
+
+async function ensureUserDoc(fbUser) {
+  const ref = doc(db, 'users', fbUser.uid, 'preferences', 'settings')
+  const snap = await getDoc(ref)
+  if (!snap.exists()) {
+    await setDoc(ref, {
+      watchlistTab: 'all',
+      watchlistSort: 'added',
+      searchHistory: [],
+      recentlyViewed: [],
+      createdAt: serverTimestamp(),
+    })
+  }
+  const themeRef = doc(db, 'users', fbUser.uid, 'preferences', 'theme')
+  const themeSnap = await getDoc(themeRef)
+  if (!themeSnap.exists()) {
+    await setDoc(themeRef, { value: 'dark' })
+  }
+}
 
 export const useAuthStore = create((set, get) => ({
   user: null,
@@ -21,18 +41,25 @@ export const useAuthStore = create((set, get) => ({
 
   initAuth: () => {
     const unsub = onAuthStateChanged(auth, (fbUser) => {
-      set({
-        authReady: true,
-        user: fbUser
-          ? {
-              id: fbUser.uid,
-              name: fbUser.displayName,
-              email: fbUser.email,
-              photoURL: fbUser.photoURL,
-              providerId: fbUser.providerData[0]?.providerId,
-            }
-          : null,
-      })
+      if (fbUser) {
+        set({
+          authReady: true,
+          user: {
+            id: fbUser.uid,
+            name: fbUser.displayName,
+            email: fbUser.email,
+            photoURL: fbUser.photoURL,
+            providerId: fbUser.providerData[0]?.providerId,
+          },
+        })
+        // Fire-and-forget: ensure Firestore user docs exist (first login / signup)
+        // Not awaited — must not block the auth callback
+        ensureUserDoc(fbUser).catch((e) => {
+          console.warn('[auth] Failed to ensure user doc:', e.message)
+        })
+      } else {
+        set({ authReady: true, user: null })
+      }
     })
     return unsub
   },

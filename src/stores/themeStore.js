@@ -7,6 +7,7 @@ const DEFAULT_THEME = "dark";
 export const useThemeStore = create((set, get) => ({
   theme: DEFAULT_THEME,
   _loaded: false,
+  _uid: null,
 
   setTheme: (theme) => {
     document.documentElement.className = theme;
@@ -16,7 +17,7 @@ export const useThemeStore = create((set, get) => ({
   toggle: () => {
     const next = get().theme === "dark" ? "light" : "dark";
     get().setTheme(next);
-    get().saveToFirestore();
+    get()._saveTheme();
   },
 
   loadFromFirestore: async (uid) => {
@@ -29,27 +30,26 @@ export const useThemeStore = create((set, get) => ({
       const snap = await getDoc(doc(db, "users", uid, "preferences", "theme"));
       const saved = snap.exists() ? snap.data().value : DEFAULT_THEME;
       get().setTheme(saved);
-    } catch {
+    } catch (e) {
+      console.warn("[theme] Failed to load from Firestore:", e.message);
       get().setTheme(DEFAULT_THEME);
     }
     set({ _loaded: true });
   },
 
-  saveToFirestore: async () => {
+  _saveTheme: async () => {
     const uid = get()._uid;
     if (!uid) return;
     try {
       await setDoc(doc(db, "users", uid, "preferences", "theme"), {
         value: get().theme,
       });
-    } catch {
-      // silent — non-critical preference save
+    } catch (e) {
+      console.warn("[theme] Failed to save to Firestore:", e.message);
     }
   },
 
   setUid: (uid) => {
     set({ _uid: uid });
   },
-
-  _uid: null,
 }));
