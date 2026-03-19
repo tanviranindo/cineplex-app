@@ -309,12 +309,13 @@ export default function Home() {
       </section>
 
       {/* ── Features ── */}
-      <section className="relative py-20">
+      <section className="relative py-20 pb-28 md:pb-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
             className="text-center mb-12"
           >
             <h2 className="text-3xl font-extrabold tracking-tight">

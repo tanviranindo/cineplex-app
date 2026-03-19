@@ -58,7 +58,12 @@ function sortItems(items, sortBy) {
 
 const container = {
   hidden: { opacity: 0 },
-  show: { opacity: 1, transition: { staggerChildren: 0.05 } },
+  show: { opacity: 1, transition: { staggerChildren: 0.04, delayChildren: 0.1 } },
+};
+
+const itemVariant = {
+  hidden: { opacity: 0, x: 20, scale: 0.95 },
+  show: { opacity: 1, x: 0, scale: 1, transition: { type: "spring", stiffness: 300, damping: 24 } },
 };
 
 export default function Watchlist() {
@@ -115,14 +120,15 @@ export default function Watchlist() {
   const displayed = sortItems(filtered, sortBy);
 
   return (
-    <div className="relative min-h-[calc(100vh-4rem)]">
+    <div className="relative min-h-[calc(100vh-4rem)] pb-20 md:pb-0">
       <div className="ambient-orb w-80 h-80 bg-violet-500/10 -top-20 -right-40 animate-float" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Header */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0, x: 30 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
           className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6"
         >
           <div className="flex items-center gap-3">
@@ -192,12 +198,13 @@ export default function Watchlist() {
             className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6"
           >
             {displayed.map((movie) => (
+              <motion.div key={movie.id} variants={itemVariant}>
               <MovieCard
-                key={movie.id}
                 movie={movie}
                 showRemove
                 addedAt={movie.addedAt}
               />
+              </motion.div>
             ))}
           </motion.div>
         )}

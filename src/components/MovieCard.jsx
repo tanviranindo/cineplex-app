@@ -40,7 +40,8 @@ export default function MovieCard({ movie, index = 0, showRemove = false, addedA
   const hasPoster = !!movie.poster_path;
   const title = movie.title || movie.Title || "Untitled";
   const year = (movie.release_date || movie.Year || "").slice(0, 4);
-  const rating = movie.vote_average ? movie.vote_average.toFixed(1) : null;
+  const hasReliableRating = movie.vote_average > 0 && (movie.vote_count == null || movie.vote_count >= 10);
+  const rating = hasReliableRating ? movie.vote_average.toFixed(1) : null;
   const movieId = movie.id;
 
   const STATUS_OPTIONS = [
@@ -132,7 +133,7 @@ export default function MovieCard({ movie, index = 0, showRemove = false, addedA
               )}
 
               {rating && (
-                <Badge className="absolute top-3 left-3 bg-amber-500/20 backdrop-blur-xl border border-amber-400/30 text-amber-300 text-xs font-medium">
+                <Badge className="absolute top-3 left-3 bg-black/70 backdrop-blur-md border border-white/10 text-white text-xs font-medium">
                   <Star className="h-3 w-3 mr-1 fill-amber-400 text-amber-400" />
                   {rating}
                 </Badge>

@@ -2,6 +2,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useState, useEffect } from 'react'
+import { motion } from 'framer-motion'
 import { toast } from 'sonner'
 import { useNavigate } from 'react-router-dom'
 import { User, Lock, Trash2, AlertTriangle } from 'lucide-react'
@@ -121,11 +122,22 @@ export default function Account() {
     : user?.email?.[0]?.toUpperCase() ?? '?'
 
   return (
-    <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-8">
-      <h1 className="text-3xl font-extrabold tracking-tight">Account Settings</h1>
+    <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 pb-24 md:pb-12 space-y-8">
+      <motion.h1
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+        className="text-3xl font-extrabold tracking-tight"
+      >
+        Account Settings
+      </motion.h1>
 
       {/* Section 1: Profile */}
-      <section className="glass rounded-2xl p-6 space-y-6">
+      <motion.section
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1, duration: 0.4 }}
+        className="glass rounded-2xl p-6 space-y-6">
         <h2 className="text-lg font-semibold flex items-center gap-2">
           <User className="h-5 w-5 text-primary" />
           Profile
@@ -160,10 +172,14 @@ export default function Account() {
             {nameSubmitting ? 'Saving...' : 'Save Name'}
           </Button>
         </form>
-      </section>
+      </motion.section>
 
       {/* Section 2: Password */}
-      <section className="glass rounded-2xl p-6 space-y-4">
+      <motion.section
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2, duration: 0.4 }}
+        className="glass rounded-2xl p-6 space-y-4">
         <h2 className="text-lg font-semibold flex items-center gap-2">
           <Lock className="h-5 w-5 text-primary" />
           Password
@@ -200,10 +216,14 @@ export default function Account() {
             </Button>
           </form>
         )}
-      </section>
+      </motion.section>
 
       {/* Section 3: Danger Zone */}
-      <section className="glass rounded-2xl p-6 space-y-4 border border-destructive/30">
+      <motion.section
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3, duration: 0.4 }}
+        className="glass rounded-2xl p-6 space-y-4 border border-destructive/30">
         <h2 className="text-lg font-semibold flex items-center gap-2 text-destructive">
           <AlertTriangle className="h-5 w-5" />
           Danger Zone
@@ -216,7 +236,7 @@ export default function Account() {
           <Trash2 className="h-4 w-4 mr-2" />
           Delete Account
         </Button>
-      </section>
+      </motion.section>
 
       {/* Delete confirmation dialog */}
       <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>

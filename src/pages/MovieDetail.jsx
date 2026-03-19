@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import {
   ArrowLeft, Star, Clock, Calendar, Film, Plus, Play, Trash2, Search,
-  ExternalLink, Bookmark, CheckCircle, Heart, Check,
+  ExternalLink, Bookmark, CheckCircle, Heart, Check, Users, Clapperboard,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "../components/ui/button";
@@ -15,7 +15,7 @@ import {
 } from "../components/ui/dialog";
 import MovieDetailSkeleton from "../components/MovieDetailSkeleton";
 import MovieCard from "../components/MovieCard";
-import { getMovieById, getSimilarMovies, getWatchProviders, posterUrl, backdropUrl } from "../services/tmdb";
+import { getMovieById, getSimilarMovies, getWatchProviders, posterUrl, backdropUrl, profileUrl } from "../services/tmdb";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -125,9 +125,7 @@ export default function MovieDetail() {
   const revenue = movie.revenue ? `$${(movie.revenue / 1_000_000).toFixed(0)}M` : null;
   const budget = movie.budget ? `$${(movie.budget / 1_000_000).toFixed(0)}M` : null;
 
-  const credits = [
-    { label: "Director", value: movie.directors?.join(", ") },
-    { label: "Cast", value: movie.cast?.join(", ") },
+  const infoCredits = [
     { label: "Release Date", value: movie.release_date },
     { label: "Revenue", value: revenue },
     { label: "Budget", value: budget },
@@ -160,10 +158,11 @@ export default function MovieDetail() {
         <div className="absolute inset-0 bg-gradient-to-b from-background/50 to-background" />
       </div>
 
-      <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
         >
           <Button
             variant="ghost"
@@ -179,9 +178,9 @@ export default function MovieDetail() {
         <div className="flex flex-col md:flex-row gap-8 lg:gap-12">
           {/* Poster */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5 }}
+            initial={{ opacity: 0, scale: 0.85, rotateY: -8 }}
+            animate={{ opacity: 1, scale: 1, rotateY: 0 }}
+            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
             className="shrink-0 mx-auto md:mx-0"
           >
             <div className="relative">
@@ -197,9 +196,9 @@ export default function MovieDetail() {
 
           {/* Info */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
+            transition={{ delay: 0.25, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
             className="flex-1 space-y-6"
           >
             <div>
@@ -224,8 +223,8 @@ export default function MovieDetail() {
                   </Badge>
                 )}
                 {movie.vote_average > 0 && (
-                  <Badge className="bg-amber-500/20 border-amber-400/30 text-amber-300 gap-1">
-                    <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                  <Badge className="bg-amber-500/15 border-amber-500/30 text-amber-600 dark:text-amber-300 gap-1">
+                    <Star className="h-3 w-3 fill-amber-500 text-amber-500 dark:fill-amber-400 dark:text-amber-400" />
                     {movie.vote_average.toFixed(1)}/10
                   </Badge>
                 )}
@@ -259,49 +258,53 @@ export default function MovieDetail() {
               </div>
             )}
 
-            {/* Streaming Providers */}
+            {/* Streaming Providers — fully inline */}
             {providers && (providers.stream.length > 0 || providers.rent.length > 0 || providers.buy.length > 0) && (
               <div className="glass rounded-xl p-5">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="p-1.5 rounded-lg bg-gradient-to-br from-violet-500 to-cyan-400">
+                    <Play className="h-3.5 w-3.5 text-white" />
+                  </div>
+                  <h3 className="text-sm font-semibold uppercase tracking-wider">
                     Where to Watch
                   </h3>
-                  {providers.link && (
-                    <a
-                      href={providers.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
-                    >
-                      <ExternalLink className="h-3 w-3" />
-                      View all options on JustWatch
-                    </a>
-                  )}
                 </div>
-                <div className="space-y-3">
+                <div className="space-y-4">
                   {[
-                    { label: "Stream", items: providers.stream },
-                    { label: "Rent", items: providers.rent },
-                    { label: "Buy", items: providers.buy },
+                    { label: "Stream", items: providers.stream, color: "from-green-500 to-emerald-600" },
+                    { label: "Rent", items: providers.rent, color: "from-blue-500 to-indigo-600" },
+                    { label: "Buy", items: providers.buy, color: "from-amber-500 to-orange-600" },
                   ]
                     .filter((g) => g.items.length > 0)
                     .map((group) => (
                       <div key={group.label}>
-                        <p className="text-xs text-muted-foreground mb-2">{group.label}</p>
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className={`inline-block w-1.5 h-1.5 rounded-full bg-gradient-to-r ${group.color}`} />
+                          <p className="text-xs font-medium text-muted-foreground">{group.label}</p>
+                        </div>
                         <div className="flex flex-wrap gap-2">
                           {group.items.map((p) => (
-                            <img
+                            <div
                               key={p.provider_id}
-                              src={posterUrl(p.logo_path, "w92")}
-                              alt={p.provider_name}
-                              title={p.provider_name}
-                              className="w-8 h-8 rounded-lg object-cover"
-                            />
+                              className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg border border-border/50 bg-secondary/30 hover:bg-secondary/60 transition-colors"
+                            >
+                              <img
+                                src={posterUrl(p.logo_path, "w92")}
+                                alt={p.provider_name}
+                                className="w-6 h-6 rounded-md object-cover"
+                              />
+                              <span className="text-xs font-medium">{p.provider_name}</span>
+                            </div>
                           ))}
                         </div>
                       </div>
                     ))}
                 </div>
+                {providers.link && (
+                  <p className="text-[10px] text-muted-foreground/50 mt-4 pt-3 border-t border-border/30">
+                    Availability data provided by JustWatch
+                  </p>
+                )}
               </div>
             )}
 
@@ -330,10 +333,83 @@ export default function MovieDetail() {
               </div>
             )}
 
-            {/* Credits */}
-            {credits.length > 0 && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {credits.map((c) => (
+            {/* Director(s) */}
+            {movie.directorsDetailed?.length > 0 && (
+              <div>
+                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                  <Clapperboard className="h-3 w-3" />
+                  Director{movie.directorsDetailed.length > 1 ? "s" : ""}
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {movie.directorsDetailed.map((d) => (
+                    <Link
+                      key={d.id}
+                      to={`/person/${d.id}`}
+                      className="flex items-center gap-2 px-3 py-2 rounded-lg border border-border/50 bg-secondary/30 hover:bg-secondary/60 transition-colors group"
+                    >
+                      {d.profilePath ? (
+                        <img
+                          src={profileUrl(d.profilePath)}
+                          alt={d.name}
+                          className="w-7 h-7 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center">
+                          <Clapperboard className="h-3.5 w-3.5 text-muted-foreground" />
+                        </div>
+                      )}
+                      <span className="text-sm font-medium group-hover:text-primary transition-colors">
+                        {d.name}
+                      </span>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Cast */}
+            {movie.castDetailed?.length > 0 && (
+              <div>
+                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                  <Users className="h-3 w-3" />
+                  Cast
+                </h3>
+                <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide sm:flex-wrap sm:overflow-visible sm:pb-0">
+                  {movie.castDetailed.map((c) => (
+                    <Link
+                      key={c.id}
+                      to={`/person/${c.id}`}
+                      className="flex flex-col items-center gap-1.5 shrink-0 w-20 group"
+                    >
+                      {c.profilePath ? (
+                        <img
+                          src={profileUrl(c.profilePath)}
+                          alt={c.name}
+                          className="w-14 h-14 rounded-full object-cover ring-2 ring-transparent group-hover:ring-primary/50 transition-all"
+                        />
+                      ) : (
+                        <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center ring-2 ring-transparent group-hover:ring-primary/50 transition-all">
+                          <Users className="h-5 w-5 text-muted-foreground" />
+                        </div>
+                      )}
+                      <span className="text-[11px] font-medium text-center leading-tight line-clamp-2 group-hover:text-primary transition-colors">
+                        {c.name}
+                      </span>
+                      {c.character && (
+                        <span className="text-[10px] text-muted-foreground text-center leading-tight line-clamp-1">
+                          {c.character}
+                        </span>
+                      )}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Info */}
+            {infoCredits.length > 0 && (
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                {infoCredits.map((c) => (
                   <div key={c.label}>
                     <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
                       {c.label}
@@ -422,11 +498,20 @@ export default function MovieDetail() {
       </div>
 
       {similar?.length > 0 && (
-        <div className="mt-16 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
-          <h2 className="text-xl font-bold mb-6">You Might Also Like</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+        <div className="mt-16 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-24 md:pb-12">
+          <motion.h2
+            initial={{ opacity: 0, x: -20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            className="text-xl font-bold mb-6"
+          >
+            You Might Also Like
+          </motion.h2>
+          <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 sm:overflow-visible sm:pb-0">
             {similar.map((m, i) => (
-              <MovieCard key={m.id} movie={m} index={i} />
+              <div key={m.id} className="shrink-0 w-36 sm:w-auto snap-start">
+                <MovieCard movie={m} index={i} />
+              </div>
             ))}
           </div>
         </div>

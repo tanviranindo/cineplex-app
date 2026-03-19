@@ -15,4 +15,7 @@ export const queryKeys = {
   },
   trending: ['trending'],
   genres: ['genres'],
+  people: {
+    search: (query) => ['people', 'search', query],
+  },
 }

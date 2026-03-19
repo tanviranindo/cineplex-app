@@ -41,10 +41,19 @@ export async function getMovieById(movieId) {
   const directors = credits.crew?.filter((c) => c.job === 'Director').map((c) => c.name) || []
   const cast = credits.cast?.slice(0, 6).map((c) => c.name) || []
 
+  const directorsDetailed = credits.crew
+    ?.filter((c) => c.job === 'Director')
+    .map((c) => ({ id: c.id, name: c.name, profilePath: c.profile_path })) || []
+  const castDetailed = credits.cast
+    ?.slice(0, 10)
+    .map((c) => ({ id: c.id, name: c.name, character: c.character, profilePath: c.profile_path })) || []
+
   return {
     ...details,
     directors,
     cast,
+    directorsDetailed,
+    castDetailed,
   }
 }
 
@@ -90,7 +99,7 @@ export async function discoverByGenre(genreId, page = 1) {
   }
 }
 
-export async function discoverMovies({ genreId, sortBy = 'popularity.desc', year } = {}, page = 1) {
+export async function discoverMovies({ genreId, sortBy = 'popularity.desc', year, language, ratingGte, withCast, withCrew } = {}, page = 1) {
   const params = new URLSearchParams({
     sort_by: sortBy,
     page: String(page),
@@ -98,6 +107,10 @@ export async function discoverMovies({ genreId, sortBy = 'popularity.desc', year
   })
   if (genreId) params.set('with_genres', String(genreId))
   if (year) params.set('primary_release_year', String(year))
+  if (language) params.set('with_original_language', language)
+  if (ratingGte) params.set('vote_average.gte', String(ratingGte))
+  if (withCast) params.set('with_cast', String(withCast))
+  if (withCrew) params.set('with_crew', String(withCrew))
   // Upcoming: sort by future release date ascending
   if (sortBy === 'primary_release_date.asc') {
     params.set('primary_release_date.gte', new Date().toISOString().slice(0, 10))
@@ -120,4 +133,52 @@ export async function getWatchProviders(movieId) {
     buy: us?.buy || [],
     link: us?.link || null,
   }
+}
+
+export async function getPersonById(personId) {
+  const [person, credits] = await Promise.all([
+    tmdbFetch(`/person/${personId}`),
+    tmdbFetch(`/person/${personId}/movie_credits`),
+  ])
+
+  const castCredits = (credits.cast || [])
+    .sort((a, b) => (b.popularity || 0) - (a.popularity || 0))
+    .slice(0, 30)
+  const crewCredits = (credits.crew || [])
+    .filter((c) => c.job === 'Director')
+    .sort((a, b) => (b.popularity || 0) - (a.popularity || 0))
+    .slice(0, 20)
+
+  return {
+    id: person.id,
+    name: person.name,
+    biography: person.biography,
+    birthday: person.birthday,
+    deathday: person.deathday,
+    placeOfBirth: person.place_of_birth,
+    profilePath: person.profile_path,
+    department: person.known_for_department,
+    alsoKnownAs: person.also_known_as,
+    homepage: person.homepage,
+    castCredits,
+    crewCredits,
+  }
+}
+
+export async function searchPeople(query) {
+  if (!query || query.length < 2) return []
+  const data = await tmdbFetch(`/search/person?query=${encodeURIComponent(query)}`)
+  return (data.results || [])
+    .slice(0, 10)
+    .map((p) => ({
+      id: p.id,
+      name: p.name,
+      department: p.known_for_department || 'Acting',
+      profilePath: p.profile_path,
+    }))
+}
+
+export function profileUrl(path, size = 'w185') {
+  if (!path) return null
+  return `${IMG_BASE}/${size}${path}`
 }

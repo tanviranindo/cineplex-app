@@ -25,7 +25,7 @@ const container = {
   hidden: { opacity: 0 },
   show: {
     opacity: 1,
-    transition: { staggerChildren: 0.05 },
+    transition: { staggerChildren: 0.04, delayChildren: 0.05 },
   },
 };
 
@@ -141,16 +141,17 @@ export default function SearchMovies() {
   };
 
   return (
-    <div className="relative min-h-[calc(100vh-4rem)]">
+    <div className="relative min-h-[calc(100vh-4rem)] pb-20 md:pb-0">
       {/* Ambient orbs */}
       <div className="ambient-orb w-80 h-80 bg-violet-500/10 -top-20 -right-40 animate-float" />
       <div className="ambient-orb w-64 h-64 bg-cyan-500/10 bottom-40 -left-32 animate-float-slow" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Header */}
+        {/* Header — drops in with bounce */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0, y: -40, scale: 0.96 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ type: "spring", stiffness: 200, damping: 20 }}
           className="relative text-center mb-10 rounded-2xl overflow-hidden glass py-12 px-6"
         >
           {featured?.[0]?.backdrop_path && (
@@ -173,11 +174,11 @@ export default function SearchMovies() {
           </div>
         </motion.div>
 
-        {/* Search bar */}
+        {/* Search bar — scales up with spring */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.15, type: "spring", stiffness: 300, damping: 25 }}
           className="max-w-2xl mx-auto mb-6"
         >
           <div className="relative search-glow rounded-xl">
