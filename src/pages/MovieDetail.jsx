@@ -1,55 +1,76 @@
-import { useParams, useNavigate, Link } from "react-router-dom";
-import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
-import { motion } from "framer-motion";
-import { useState, useEffect } from "react";
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useQuery, useInfiniteQuery } from '@tanstack/react-query';
+import { motion } from 'framer-motion';
+import { useState, useEffect } from 'react';
 import {
-  ArrowLeft, Star, Clock, Calendar, Film, Plus, Play, Trash2, Search,
-  ExternalLink, Bookmark, CheckCircle, Heart, Check, Users, Clapperboard,
-} from "lucide-react";
-import { toast } from "sonner";
-import { Button } from "../components/ui/button";
-import { Badge } from "../components/ui/badge";
+  ArrowLeft,
+  Star,
+  Clock,
+  Calendar,
+  Film,
+  Plus,
+  Play,
+  Trash2,
+  Search,
+  ExternalLink,
+  Bookmark,
+  CheckCircle,
+  Heart,
+  Check,
+  Users,
+  Clapperboard,
+} from 'lucide-react';
+import { toast } from 'sonner';
+import { Button } from '../components/ui/button';
+import { Badge } from '../components/ui/badge';
+import { Dialog, DialogContent } from '../components/ui/dialog';
+import MovieDetailSkeleton from '../components/MovieDetailSkeleton';
+import MovieCard from '../components/MovieCard';
 import {
-  Dialog,
-  DialogContent,
-} from "../components/ui/dialog";
-import MovieDetailSkeleton from "../components/MovieDetailSkeleton";
-import MovieCard from "../components/MovieCard";
-import { getMovieById, getSimilarMovies, getWatchProviders, posterUrl, backdropUrl, profileUrl } from "../services/tmdb";
+  getMovieById,
+  getSimilarMovies,
+  getWatchProviders,
+  posterUrl,
+  backdropUrl,
+  profileUrl,
+} from '../services/tmdb';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "../components/ui/dropdown-menu";
-import { usePageTitle } from "../hooks/usePageTitle";
-import { useAuthStore } from "../stores/authStore";
-import { useWatchlistStore } from "../stores/watchlistStore";
-import { usePreferencesStore } from "../stores/preferencesStore";
-import { queryKeys } from "../lib/queryKeys";
+} from '../components/ui/dropdown-menu';
+import { usePageTitle } from '../hooks/usePageTitle';
+import { useAuthStore } from '../stores/authStore';
+import { useWatchlistStore } from '../stores/watchlistStore';
+import { usePreferencesStore } from '../stores/preferencesStore';
+import { queryKeys } from '../lib/queryKeys';
 
 const PLACEHOLDER =
   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='450' fill='%231a1a2e'%3E%3Crect width='300' height='450'/%3E%3Ctext x='150' y='225' text-anchor='middle' fill='%238b5cf6' font-size='16' font-family='sans-serif'%3ENo Poster%3C/text%3E%3C/svg%3E";
 
 // Deep-link mapping for major streaming providers (TMDB provider_id → base URL)
 const PROVIDER_URLS = {
-  8:   (title) => `https://www.netflix.com/search?q=${encodeURIComponent(title)}`,          // Netflix
-  9:   (title) => `https://www.amazon.com/s?k=${encodeURIComponent(title)}&i=instant-video`, // Amazon Prime Video
-  337: (title) => `https://www.disneyplus.com/search/${encodeURIComponent(title)}`,          // Disney+
-  15:  (title) => `https://www.hulu.com/search?q=${encodeURIComponent(title)}`,              // Hulu
-  350: (title) => `https://tv.apple.com/search?term=${encodeURIComponent(title)}`,           // Apple TV+
-  2:   (title) => `https://tv.apple.com/search?term=${encodeURIComponent(title)}`,           // Apple TV
-  384: (title) => `https://play.max.com/search?q=${encodeURIComponent(title)}`,              // HBO Max
-  531: (title) => `https://www.paramountplus.com/search/?q=${encodeURIComponent(title)}`,    // Paramount+
-  386: (title) => `https://www.peacocktv.com/search?q=${encodeURIComponent(title)}`,         // Peacock
-  283: (title) => `https://www.crunchyroll.com/search?q=${encodeURIComponent(title)}`,       // Crunchyroll
-  387: (title) => `https://www.peacocktv.com/search?q=${encodeURIComponent(title)}`,         // Peacock Premium
-  1899:(title) => `https://play.max.com/search?q=${encodeURIComponent(title)}`,              // Max
-  192: (title) => `https://www.youtube.com/results?search_query=${encodeURIComponent(title + " full movie")}`, // YouTube
-  3:   (title) => `https://play.google.com/store/search?q=${encodeURIComponent(title)}&c=movies`, // Google Play Movies
-  10:  (title) => `https://www.amazon.com/s?k=${encodeURIComponent(title)}&i=instant-video`, // Amazon Video
-  7:   (title) => `https://www.vudu.com/content/movies/search?searchString=${encodeURIComponent(title)}`, // Vudu
-  68:  (title) => `https://www.microsoft.com/en-us/search/result.aspx?q=${encodeURIComponent(title)}`, // Microsoft Store
+  8: (title) => `https://www.netflix.com/search?q=${encodeURIComponent(title)}`, // Netflix
+  9: (title) => `https://www.amazon.com/s?k=${encodeURIComponent(title)}&i=instant-video`, // Amazon Prime Video
+  337: (title) => `https://www.disneyplus.com/search/${encodeURIComponent(title)}`, // Disney+
+  15: (title) => `https://www.hulu.com/search?q=${encodeURIComponent(title)}`, // Hulu
+  350: (title) => `https://tv.apple.com/search?term=${encodeURIComponent(title)}`, // Apple TV+
+  2: (title) => `https://tv.apple.com/search?term=${encodeURIComponent(title)}`, // Apple TV
+  384: (title) => `https://play.max.com/search?q=${encodeURIComponent(title)}`, // HBO Max
+  531: (title) => `https://www.paramountplus.com/search/?q=${encodeURIComponent(title)}`, // Paramount+
+  386: (title) => `https://www.peacocktv.com/search?q=${encodeURIComponent(title)}`, // Peacock
+  283: (title) => `https://www.crunchyroll.com/search?q=${encodeURIComponent(title)}`, // Crunchyroll
+  387: (title) => `https://www.peacocktv.com/search?q=${encodeURIComponent(title)}`, // Peacock Premium
+  1899: (title) => `https://play.max.com/search?q=${encodeURIComponent(title)}`, // Max
+  192: (title) =>
+    `https://www.youtube.com/results?search_query=${encodeURIComponent(title + ' full movie')}`, // YouTube
+  3: (title) => `https://play.google.com/store/search?q=${encodeURIComponent(title)}&c=movies`, // Google Play Movies
+  10: (title) => `https://www.amazon.com/s?k=${encodeURIComponent(title)}&i=instant-video`, // Amazon Video
+  7: (title) =>
+    `https://www.vudu.com/content/movies/search?searchString=${encodeURIComponent(title)}`, // Vudu
+  68: (title) =>
+    `https://www.microsoft.com/en-us/search/result.aspx?q=${encodeURIComponent(title)}`, // Microsoft Store
 };
 
 function getProviderUrl(providerId, providerName, movieTitle) {
@@ -70,9 +91,15 @@ export default function MovieDetail() {
   const isInList = useWatchlistStore((s) => s.isInList(movieId));
   const setStatus = useWatchlistStore((s) => s.setStatus);
   // Use direct items selector (not s.getItemStatus) so the component re-renders when status changes
-  const currentStatus = useWatchlistStore((s) => s.items.find((m) => m.id === movieId)?.status ?? null);
+  const currentStatus = useWatchlistStore(
+    (s) => s.items.find((m) => m.id === movieId)?.status ?? null
+  );
 
-  const { data: movie, isLoading, isError } = useQuery({
+  const {
+    data: movie,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: queryKeys.movies.detail(id),
     queryFn: () => getMovieById(id),
   });
@@ -110,20 +137,23 @@ export default function MovieDetail() {
 
   const handleAdd = async () => {
     if (!user) {
-      toast.error("Please sign in to add movies to your watchlist");
+      toast.error('Please sign in to add movies to your watchlist');
       return;
     }
     try {
-      await add({
-        id: movie.id,
-        title: movie.title,
-        poster_path: movie.poster_path,
-        release_date: movie.release_date,
-        vote_average: movie.vote_average,
-      }, user.id);
+      await add(
+        {
+          id: movie.id,
+          title: movie.title,
+          poster_path: movie.poster_path,
+          release_date: movie.release_date,
+          vote_average: movie.vote_average,
+        },
+        user.id
+      );
       toast.success(`"${movie.title}" added to watchlist`);
     } catch {
-      toast.error("Failed to update watchlist");
+      toast.error('Failed to update watchlist');
     }
   };
 
@@ -133,7 +163,7 @@ export default function MovieDetail() {
       await remove(movie.id, user.id);
       toast.success(`"${movie.title}" removed from watchlist`);
     } catch {
-      toast.error("Failed to remove from watchlist");
+      toast.error('Failed to remove from watchlist');
     }
   };
 
@@ -146,7 +176,7 @@ export default function MovieDetail() {
       <div className="min-h-[calc(100vh-4rem)] flex flex-col items-center justify-center gap-4">
         <Film className="h-16 w-16 text-muted-foreground/30" />
         <p className="text-xl font-medium">Movie not found</p>
-        <Button variant="outline" onClick={() => navigate("/search")}>
+        <Button variant="outline" onClick={() => navigate('/search')}>
           Back to Search
         </Button>
       </div>
@@ -156,25 +186,25 @@ export default function MovieDetail() {
   const poster = posterUrl(movie.poster_path) || PLACEHOLDER;
   const backdrop = backdropUrl(movie.backdrop_path);
   const genres = movie.genres || [];
-  const trailer = movie.videos?.results?.find(
-    (v) => v.type === "Trailer" && v.site === "YouTube"
-  );
+  const trailer = movie.videos?.results?.find((v) => v.type === 'Trailer' && v.site === 'YouTube');
   const year = movie.release_date?.slice(0, 4);
-  const runtime = movie.runtime ? `${Math.floor(movie.runtime / 60)}h ${movie.runtime % 60}m` : null;
+  const runtime = movie.runtime
+    ? `${Math.floor(movie.runtime / 60)}h ${movie.runtime % 60}m`
+    : null;
   const revenue = movie.revenue ? `$${(movie.revenue / 1_000_000).toFixed(0)}M` : null;
   const budget = movie.budget ? `$${(movie.budget / 1_000_000).toFixed(0)}M` : null;
 
   const infoCredits = [
-    { label: "Release Date", value: movie.release_date },
-    { label: "Revenue", value: revenue },
-    { label: "Budget", value: budget },
-    { label: "Status", value: movie.status },
+    { label: 'Release Date', value: movie.release_date },
+    { label: 'Revenue', value: revenue },
+    { label: 'Budget', value: budget },
+    { label: 'Status', value: movie.status },
   ].filter((c) => c.value);
 
   const STATUS_OPTIONS = [
-    { value: "to_watch", label: "To Watch", icon: Bookmark },
-    { value: "watched", label: "Watched", icon: CheckCircle },
-    { value: "favorite", label: "Favorite", icon: Heart },
+    { value: 'to_watch', label: 'To Watch', icon: Bookmark },
+    { value: 'watched', label: 'Watched', icon: CheckCircle },
+    { value: 'favorite', label: 'Favorite', icon: Heart },
   ];
 
   return (
@@ -241,9 +271,7 @@ export default function MovieDetail() {
             className="flex-1 space-y-6"
           >
             <div>
-              <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
-                {movie.title}
-              </h1>
+              <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">{movie.title}</h1>
               {movie.tagline && (
                 <p className="text-muted-foreground mt-1 italic">"{movie.tagline}"</p>
               )}
@@ -277,69 +305,70 @@ export default function MovieDetail() {
               {/* Actions — prominent at top */}
               <div className="flex flex-wrap items-center gap-2 mt-5">
                 {trailer && (
-                  <Button onClick={() => setTrailerOpen(true)} className="shadow-lg shadow-primary/25">
+                  <Button
+                    onClick={() => setTrailerOpen(true)}
+                    className="shadow-lg shadow-primary/25"
+                  >
                     <Play className="h-4 w-4 mr-2 fill-current" />
                     Watch Trailer
                   </Button>
                 )}
-                {user && (
-                  isInList ? (
-                    <Button
-                      variant="outline"
-                      onClick={handleRemove}
-                    >
+                {user &&
+                  (isInList ? (
+                    <Button variant="outline" onClick={handleRemove}>
                       <Trash2 className="h-4 w-4 mr-2" />
                       Remove
                     </Button>
                   ) : (
                     <Button
-                      variant={trailer ? "outline" : "default"}
-                      className={!trailer ? "shadow-lg shadow-primary/25" : ""}
+                      variant={trailer ? 'outline' : 'default'}
+                      className={!trailer ? 'shadow-lg shadow-primary/25' : ''}
                       onClick={handleAdd}
                     >
                       <Plus className="h-4 w-4 mr-2" />
                       Watchlist
                     </Button>
-                  )
-                )}
-                {user && isInList && (() => {
-                  const opt = STATUS_OPTIONS.find((o) => o.value === currentStatus);
-                  const Icon = opt?.icon || Bookmark;
-                  return (
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Badge
-                          variant="secondary"
-                          className="cursor-pointer gap-1.5 px-3 py-1.5 text-sm font-medium hover:bg-secondary/80 transition-colors"
-                        >
-                          <Icon className="h-3.5 w-3.5" />
-                          {opt?.label || "To Watch"}
-                        </Badge>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent>
-                        {STATUS_OPTIONS.map((o) => (
-                          <DropdownMenuItem
-                            key={o.value}
-                            onClick={async () => {
-                              try {
-                                await setStatus(movieId, user.id, o.value);
-                              } catch {
-                                toast.error("Failed to update watchlist");
-                              }
-                            }}
-                            className={currentStatus === o.value ? "bg-accent" : ""}
+                  ))}
+                {user &&
+                  isInList &&
+                  (() => {
+                    const opt = STATUS_OPTIONS.find((o) => o.value === currentStatus);
+                    const Icon = opt?.icon || Bookmark;
+                    return (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Badge
+                            variant="secondary"
+                            className="cursor-pointer gap-1.5 px-3 py-1.5 text-sm font-medium hover:bg-secondary/80 transition-colors"
                           >
-                            <o.icon className="h-4 w-4 mr-2" />
-                            {o.label}
-                            {currentStatus === o.value && (
-                              <Check className="h-3.5 w-3.5 ml-auto text-primary" />
-                            )}
-                          </DropdownMenuItem>
-                        ))}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  );
-                })()}
+                            <Icon className="h-3.5 w-3.5" />
+                            {opt?.label || 'To Watch'}
+                          </Badge>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                          {STATUS_OPTIONS.map((o) => (
+                            <DropdownMenuItem
+                              key={o.value}
+                              onClick={async () => {
+                                try {
+                                  await setStatus(movieId, user.id, o.value);
+                                } catch {
+                                  toast.error('Failed to update watchlist');
+                                }
+                              }}
+                              className={currentStatus === o.value ? 'bg-accent' : ''}
+                            >
+                              <o.icon className="h-4 w-4 mr-2" />
+                              {o.label}
+                              {currentStatus === o.value && (
+                                <Check className="h-3.5 w-3.5 ml-auto text-primary" />
+                              )}
+                            </DropdownMenuItem>
+                          ))}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    );
+                  })()}
               </div>
             </div>
 
@@ -366,59 +395,80 @@ export default function MovieDetail() {
             )}
 
             {/* Streaming Providers — clickable links to services */}
-            {providers && (providers.stream.length > 0 || providers.rent.length > 0 || providers.buy.length > 0) && (
-              <div className="glass rounded-xl p-5">
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="p-1.5 rounded-lg bg-gradient-to-br from-violet-500 to-cyan-400">
-                    <Play className="h-3.5 w-3.5 text-white" />
+            {providers &&
+              (providers.stream.length > 0 ||
+                providers.rent.length > 0 ||
+                providers.buy.length > 0) && (
+                <div className="glass rounded-xl p-5">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="p-1.5 rounded-lg bg-gradient-to-br from-violet-500 to-cyan-400">
+                      <Play className="h-3.5 w-3.5 text-white" />
+                    </div>
+                    <h3 className="text-sm font-semibold uppercase tracking-wider">
+                      Where to Watch
+                    </h3>
                   </div>
-                  <h3 className="text-sm font-semibold uppercase tracking-wider">
-                    Where to Watch
-                  </h3>
-                </div>
-                <div className="space-y-4">
-                  {[
-                    { label: "Stream", items: providers.stream, color: "from-green-500 to-emerald-600" },
-                    { label: "Rent", items: providers.rent, color: "from-blue-500 to-indigo-600" },
-                    { label: "Buy", items: providers.buy, color: "from-amber-500 to-orange-600" },
-                  ]
-                    .filter((g) => g.items.length > 0)
-                    .map((group) => (
-                      <div key={group.label}>
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className={`inline-block w-1.5 h-1.5 rounded-full bg-gradient-to-r ${group.color}`} />
-                          <p className="text-xs font-medium text-muted-foreground">{group.label}</p>
+                  <div className="space-y-4">
+                    {[
+                      {
+                        label: 'Stream',
+                        items: providers.stream,
+                        color: 'from-green-500 to-emerald-600',
+                      },
+                      {
+                        label: 'Rent',
+                        items: providers.rent,
+                        color: 'from-blue-500 to-indigo-600',
+                      },
+                      { label: 'Buy', items: providers.buy, color: 'from-amber-500 to-orange-600' },
+                    ]
+                      .filter((g) => g.items.length > 0)
+                      .map((group) => (
+                        <div key={group.label}>
+                          <div className="flex items-center gap-2 mb-2">
+                            <span
+                              className={`inline-block w-1.5 h-1.5 rounded-full bg-gradient-to-r ${group.color}`}
+                            />
+                            <p className="text-xs font-medium text-muted-foreground">
+                              {group.label}
+                            </p>
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            {group.items.map((p) => {
+                              const url = getProviderUrl(
+                                p.provider_id,
+                                p.provider_name,
+                                movie.title
+                              );
+                              return (
+                                <a
+                                  key={p.provider_id}
+                                  href={url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg border border-border/50 bg-secondary/30 hover:bg-primary/10 hover:border-primary/30 transition-colors group/provider"
+                                >
+                                  <img
+                                    src={posterUrl(p.logo_path, 'w92')}
+                                    alt={p.provider_name}
+                                    className="w-6 h-6 rounded-md object-cover"
+                                  />
+                                  <span className="text-xs font-medium group-hover/provider:text-primary transition-colors">
+                                    {p.provider_name}
+                                  </span>
+                                  <ExternalLink className="h-3 w-3 text-muted-foreground/40 group-hover/provider:text-primary/60 transition-colors" />
+                                </a>
+                              );
+                            })}
+                          </div>
                         </div>
-                        <div className="flex flex-wrap gap-2">
-                          {group.items.map((p) => {
-                            const url = getProviderUrl(p.provider_id, p.provider_name, movie.title);
-                            return (
-                              <a
-                                key={p.provider_id}
-                                href={url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg border border-border/50 bg-secondary/30 hover:bg-primary/10 hover:border-primary/30 transition-colors group/provider"
-                              >
-                                <img
-                                  src={posterUrl(p.logo_path, "w92")}
-                                  alt={p.provider_name}
-                                  className="w-6 h-6 rounded-md object-cover"
-                                />
-                                <span className="text-xs font-medium group-hover/provider:text-primary transition-colors">{p.provider_name}</span>
-                                <ExternalLink className="h-3 w-3 text-muted-foreground/40 group-hover/provider:text-primary/60 transition-colors" />
-                              </a>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    ))}
+                      ))}
+                  </div>
+                  <p className="text-[10px] text-muted-foreground/50 mt-4 pt-3 border-t border-border/30">
+                    Links open each service directly. Availability data by JustWatch.
+                  </p>
                 </div>
-                <p className="text-[10px] text-muted-foreground/50 mt-4 pt-3 border-t border-border/30">
-                  Links open each service directly. Availability data by JustWatch.
-                </p>
-              </div>
-            )}
+              )}
 
             {/* Rating visual */}
             {movie.vote_average > 0 && (
@@ -450,7 +500,7 @@ export default function MovieDetail() {
               <div>
                 <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-1.5">
                   <Clapperboard className="h-3 w-3" />
-                  Director{movie.directorsDetailed.length > 1 ? "s" : ""}
+                  Director{movie.directorsDetailed.length > 1 ? 's' : ''}
                 </h3>
                 <div className="flex flex-wrap gap-2">
                   {movie.directorsDetailed.map((d) => (
@@ -510,7 +560,7 @@ export default function MovieDetail() {
                           {c.name}
                         </span>
                         <span className="text-[10px] text-muted-foreground text-center leading-tight line-clamp-1 min-h-[1rem]">
-                          {charName || "\u00A0"}
+                          {charName || '\u00A0'}
                         </span>
                       </Link>
                     );
@@ -532,7 +582,6 @@ export default function MovieDetail() {
                 ))}
               </div>
             )}
-
           </motion.div>
         </div>
       </div>
@@ -559,7 +608,7 @@ export default function MovieDetail() {
                 onClick={() => fetchMoreSimilar()}
                 disabled={fetchingSimilar}
               >
-                {fetchingSimilar ? "Loading..." : "Show More"}
+                {fetchingSimilar ? 'Loading...' : 'Show More'}
               </Button>
             </div>
           )}

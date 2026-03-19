@@ -1,23 +1,23 @@
-import { Navigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { motion } from "framer-motion";
-import { Film } from "lucide-react";
-import { useAuthStore } from "../stores/authStore";
-import { getTrendingMovies, posterUrl } from "../services/tmdb";
+import { Navigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { motion } from 'framer-motion';
+import { Film } from 'lucide-react';
+import { useAuthStore } from '../stores/authStore';
+import { getTrendingMovies, posterUrl } from '../services/tmdb';
 
-export default function AuthLayout({ children, posterSide = "left" }) {
+export default function AuthLayout({ children, posterSide = 'left' }) {
   const user = useAuthStore((s) => s.user);
   const authReady = useAuthStore((s) => s.authReady);
 
   const { data: trending } = useQuery({
-    queryKey: ["trending"],
+    queryKey: ['trending'],
     queryFn: getTrendingMovies,
     staleTime: 1000 * 60 * 30,
   });
 
   if (authReady && user) return <Navigate to="/search" replace />;
 
-  const isLeft = posterSide === "left";
+  const isLeft = posterSide === 'left';
 
   const posterPanel = (
     <motion.div
@@ -48,12 +48,16 @@ export default function AuthLayout({ children, posterSide = "left" }) {
         <div className="absolute inset-0 bg-gradient-to-br from-violet-900 via-purple-900 to-indigo-900" />
       )}
       <div className="absolute inset-0 bg-black/50" />
-      <div className={`absolute inset-0 ${
-        isLeft
-          ? "bg-gradient-to-r from-transparent to-background/80"
-          : "bg-gradient-to-l from-transparent to-background/80"
-      }`} />
-      <div className={`absolute bottom-0 ${isLeft ? "left-0 right-0" : "left-0 right-0"} p-10 bg-gradient-to-t from-black/80 to-transparent`}>
+      <div
+        className={`absolute inset-0 ${
+          isLeft
+            ? 'bg-gradient-to-r from-transparent to-background/80'
+            : 'bg-gradient-to-l from-transparent to-background/80'
+        }`}
+      />
+      <div
+        className={`absolute bottom-0 ${isLeft ? 'left-0 right-0' : 'left-0 right-0'} p-10 bg-gradient-to-t from-black/80 to-transparent`}
+      >
         <div className="flex items-center gap-2 mb-4">
           <div className="p-2 rounded-xl bg-gradient-to-br from-violet-500 to-cyan-400">
             <Film className="h-5 w-5 text-white" />

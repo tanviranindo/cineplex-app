@@ -1,10 +1,10 @@
-import { Outlet, useLocation } from "react-router-dom";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import ScrollToTop from "./ScrollToTop";
-import Navbar from "./Navbar";
-import BottomNav from "./BottomNav";
-import ErrorBoundary from "./ErrorBoundary";
-import { Film } from "lucide-react";
+import { Outlet, useLocation } from 'react-router-dom';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import ScrollToTop from './ScrollToTop';
+import Navbar from './Navbar';
+import BottomNav from './BottomNav';
+import ErrorBoundary from './ErrorBoundary';
+import { Film } from 'lucide-react';
 
 export default function Layout() {
   const location = useLocation();
@@ -28,7 +28,7 @@ export default function Layout() {
               initial={{ opacity: 0, y: reducedMotion ? 0 : 6 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: reducedMotion ? 0 : 0.15, ease: "easeOut" }}
+              transition={{ duration: reducedMotion ? 0 : 0.15, ease: 'easeOut' }}
             >
               <Outlet />
             </motion.div>

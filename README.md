@@ -16,18 +16,18 @@ It supports account-based watchlists, advanced browse filters, movie/person deta
 
 ## Tech Stack
 
-| Category | Technology |
-| --- | --- |
-| Framework | React 18 + Vite 5 |
-| Styling | Tailwind CSS v3 |
-| UI Primitives | Radix UI + custom `shadcn/ui` style components |
-| Data Fetching | TanStack Query |
-| State Management | Zustand |
-| Routing | React Router v7 |
-| Forms & Validation | React Hook Form + Zod |
-| Backend Services | Firebase Auth + Firestore |
-| Movie Data API | TMDB API (v3) |
-| Motion & Feedback | Framer Motion + Sonner |
+| Category           | Technology                                     |
+| ------------------ | ---------------------------------------------- |
+| Framework          | React 18 + Vite 5                              |
+| Styling            | Tailwind CSS v3                                |
+| UI Primitives      | Radix UI + custom `shadcn/ui` style components |
+| Data Fetching      | TanStack Query                                 |
+| State Management   | Zustand                                        |
+| Routing            | React Router v7                                |
+| Forms & Validation | React Hook Form + Zod                          |
+| Backend Services   | Firebase Auth + Firestore                      |
+| Movie Data API     | TMDB API (v3)                                  |
+| Motion & Feedback  | Framer Motion + Sonner                         |
 
 ## Prerequisites
 

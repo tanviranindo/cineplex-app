@@ -1,58 +1,58 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
-import { Film, Plus, Search, ArrowUpDown, ChevronLeft, ChevronRight } from "lucide-react";
-import { Button } from "../components/ui/button";
-import { Badge } from "../components/ui/badge";
-import { Tabs, TabsList, TabsTrigger } from "../components/ui/tabs";
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { Film, Plus, Search, ArrowUpDown, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Button } from '../components/ui/button';
+import { Badge } from '../components/ui/badge';
+import { Tabs, TabsList, TabsTrigger } from '../components/ui/tabs';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../components/ui/select";
-import MovieCard from "../components/MovieCard";
-import { useWatchlistStore } from "../stores/watchlistStore";
-import { usePreferencesStore } from "../stores/preferencesStore";
-import { usePageTitle } from "../hooks/usePageTitle";
+} from '../components/ui/select';
+import MovieCard from '../components/MovieCard';
+import { useWatchlistStore } from '../stores/watchlistStore';
+import { usePreferencesStore } from '../stores/preferencesStore';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 const TAB_STATUS = {
   all: null,
-  to_watch: "to_watch",
-  watched: "watched",
-  favorite: "favorite",
+  to_watch: 'to_watch',
+  watched: 'watched',
+  favorite: 'favorite',
 };
 
 const TAB_LABELS = {
-  all: "All",
-  to_watch: "To Watch",
-  watched: "Watched",
-  favorite: "Favorites",
+  all: 'All',
+  to_watch: 'To Watch',
+  watched: 'Watched',
+  favorite: 'Favorites',
 };
 
 function sortItems(items, sortBy) {
   const sorted = [...items];
   switch (sortBy) {
-    case "title":
-      return sorted.sort((a, b) => (a.title || "").localeCompare(b.title || ""));
-    case "rating":
+    case 'title':
+      return sorted.sort((a, b) => (a.title || '').localeCompare(b.title || ''));
+    case 'rating':
       return sorted.sort((a, b) => (b.vote_average || 0) - (a.vote_average || 0));
-    case "year":
+    case 'year':
       return sorted.sort((a, b) => {
-        const ya = (a.release_date || "").slice(0, 4);
-        const yb = (b.release_date || "").slice(0, 4);
+        const ya = (a.release_date || '').slice(0, 4);
+        const yb = (b.release_date || '').slice(0, 4);
         return yb.localeCompare(ya);
       });
-    case "added":
+    case 'added':
     default: {
       const toMs = (v) => {
-        if (!v) return 0
-        if (typeof v === 'number') return v
-        if (typeof v.toMillis === 'function') return v.toMillis()
-        return 0
-      }
-      return sorted.sort((a, b) => toMs(b.addedAt) - toMs(a.addedAt))
+        if (!v) return 0;
+        if (typeof v === 'number') return v;
+        if (typeof v.toMillis === 'function') return v.toMillis();
+        return 0;
+      };
+      return sorted.sort((a, b) => toMs(b.addedAt) - toMs(a.addedAt));
     }
   }
 }
@@ -64,13 +64,13 @@ const container = {
 
 const itemVariant = {
   hidden: { opacity: 0, x: 20, scale: 0.95 },
-  show: { opacity: 1, x: 0, scale: 1, transition: { type: "spring", stiffness: 300, damping: 24 } },
+  show: { opacity: 1, x: 0, scale: 1, transition: { type: 'spring', stiffness: 300, damping: 24 } },
 };
 
 const ITEMS_PER_PAGE = 20;
 
 export default function Watchlist() {
-  usePageTitle("My Watchlist");
+  usePageTitle('My Watchlist');
   const items = useWatchlistStore((s) => s.items);
   const activeTab = usePreferencesStore((s) => s.watchlistTab);
   const sortBy = usePreferencesStore((s) => s.watchlistSort);
@@ -108,17 +108,17 @@ export default function Watchlist() {
   // Per-tab counts (always from full items list)
   const counts = {
     all: items.length,
-    to_watch: items.filter((m) => m.status === "to_watch" || !m.status).length,
-    watched: items.filter((m) => m.status === "watched").length,
-    favorite: items.filter((m) => m.status === "favorite").length,
+    to_watch: items.filter((m) => m.status === 'to_watch' || !m.status).length,
+    watched: items.filter((m) => m.status === 'watched').length,
+    favorite: items.filter((m) => m.status === 'favorite').length,
   };
 
   // Filtered + sorted items
   const filtered =
-    activeTab === "all"
+    activeTab === 'all'
       ? items
       : items.filter((m) => {
-          if (activeTab === "to_watch") return m.status === "to_watch" || !m.status;
+          if (activeTab === 'to_watch') return m.status === 'to_watch' || !m.status;
           return m.status === TAB_STATUS[activeTab];
         });
   const allSorted = sortItems(filtered, sortBy);
@@ -127,8 +127,14 @@ export default function Watchlist() {
   const displayed = allSorted.slice((safePage - 1) * ITEMS_PER_PAGE, safePage * ITEMS_PER_PAGE);
   const needsPagination = allSorted.length > ITEMS_PER_PAGE;
 
-  const handleTabChange = (tab) => { setActiveTab(tab); setPage(1); };
-  const handleSortChange = (sort) => { setSortBy(sort); setPage(1); };
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    setPage(1);
+  };
+  const handleSortChange = (sort) => {
+    setSortBy(sort);
+    setPage(1);
+  };
 
   return (
     <div className="relative min-h-[calc(100vh-4rem)] overflow-x-hidden">
@@ -143,11 +149,9 @@ export default function Watchlist() {
           className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6"
         >
           <div className="flex items-center gap-3">
-            <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
-              My Watchlist
-            </h1>
+            <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">My Watchlist</h1>
             <Badge variant="secondary" className="text-sm">
-              {items.length} movie{items.length !== 1 ? "s" : ""}
+              {items.length} movie{items.length !== 1 ? 's' : ''}
             </Badge>
           </div>
           <div className="flex items-center gap-3">
@@ -191,13 +195,15 @@ export default function Watchlist() {
         {displayed.length === 0 ? (
           <div className="py-20 text-center">
             <Film className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
-            <p className="text-lg font-medium">No {TAB_LABELS[activeTab].toLowerCase()} movies yet</p>
+            <p className="text-lg font-medium">
+              No {TAB_LABELS[activeTab].toLowerCase()} movies yet
+            </p>
             <p className="text-muted-foreground mt-1 text-sm">
-              {activeTab === "favorite"
-                ? "Mark movies as favorites from your watchlist."
-                : activeTab === "watched"
-                ? "Mark movies as watched to track your progress."
-                : "Add movies to your watchlist to see them here."}
+              {activeTab === 'favorite'
+                ? 'Mark movies as favorites from your watchlist.'
+                : activeTab === 'watched'
+                  ? 'Mark movies as watched to track your progress.'
+                  : 'Add movies to your watchlist to see them here.'}
             </p>
           </div>
         ) : (
@@ -210,11 +216,7 @@ export default function Watchlist() {
           >
             {displayed.map((movie) => (
               <motion.div key={movie.id} variants={itemVariant}>
-              <MovieCard
-                movie={movie}
-                showRemove
-                addedAt={movie.addedAt}
-              />
+                <MovieCard movie={movie} showRemove addedAt={movie.addedAt} />
               </motion.div>
             ))}
           </motion.div>
@@ -226,7 +228,10 @@ export default function Watchlist() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => { setPage((p) => Math.max(1, p - 1)); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+              onClick={() => {
+                setPage((p) => Math.max(1, p - 1));
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
               disabled={safePage <= 1}
             >
               <ChevronLeft className="h-4 w-4 mr-1" />
@@ -238,7 +243,10 @@ export default function Watchlist() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => { setPage((p) => Math.min(totalPages, p + 1)); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+              onClick={() => {
+                setPage((p) => Math.min(totalPages, p + 1));
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
               disabled={safePage >= totalPages}
             >
               Next

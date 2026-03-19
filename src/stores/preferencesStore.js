@@ -1,15 +1,15 @@
-import { create } from "zustand";
-import { doc, getDoc, setDoc } from "firebase/firestore";
-import { db } from "../services/firebase";
+import { create } from 'zustand';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { db } from '../services/firebase';
 
 const DEFAULTS = {
-  watchlistTab: "all",
-  watchlistSort: "added",
+  watchlistTab: 'all',
+  watchlistSort: 'added',
   searchHistory: [],
   recentlyViewed: [],
 };
 
-const PREFS_PATH = (uid) => doc(db, "users", uid, "preferences", "settings");
+const PREFS_PATH = (uid) => doc(db, 'users', uid, 'preferences', 'settings');
 const MAX_SEARCH_HISTORY = 10;
 const MAX_RECENTLY_VIEWED = 20;
 
@@ -39,7 +39,7 @@ export const usePreferencesStore = create((set, get) => ({
         set({ ...DEFAULTS, _uid: uid, _loaded: true });
       }
     } catch (e) {
-      console.warn("[preferences] Failed to load:", e.message);
+      console.warn('[preferences] Failed to load:', e.message);
       set({ ...DEFAULTS, _uid: uid, _loaded: true });
     }
   },
@@ -48,14 +48,18 @@ export const usePreferencesStore = create((set, get) => ({
     const { _uid, watchlistTab, watchlistSort, searchHistory, recentlyViewed } = get();
     if (!_uid) return;
     try {
-      await setDoc(PREFS_PATH(_uid), {
-        watchlistTab,
-        watchlistSort,
-        searchHistory,
-        recentlyViewed,
-      }, { merge: true });
+      await setDoc(
+        PREFS_PATH(_uid),
+        {
+          watchlistTab,
+          watchlistSort,
+          searchHistory,
+          recentlyViewed,
+        },
+        { merge: true }
+      );
     } catch (e) {
-      console.warn("[preferences] Failed to save:", e.message);
+      console.warn('[preferences] Failed to save:', e.message);
     }
   },
 
@@ -96,7 +100,7 @@ export const usePreferencesStore = create((set, get) => ({
       title: movie.title,
       poster_path: movie.poster_path ?? null,
       vote_average: movie.vote_average ?? 0,
-      release_date: movie.release_date ?? "",
+      release_date: movie.release_date ?? '',
       viewedAt: Date.now(),
     };
     const prev = get().recentlyViewed.filter((m) => m.id !== movie.id);

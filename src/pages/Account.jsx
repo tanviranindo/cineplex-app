@@ -1,14 +1,14 @@
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
-import { toast } from 'sonner'
-import { useNavigate } from 'react-router-dom'
-import { User, Lock, Trash2, AlertTriangle } from 'lucide-react'
-import { Button } from '../components/ui/button'
-import { Input } from '../components/ui/input'
-import PasswordInput from '../components/PasswordInput'
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
+import { User, Lock, Trash2, AlertTriangle } from 'lucide-react';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
+import PasswordInput from '../components/PasswordInput';
 import {
   Dialog,
   DialogContent,
@@ -16,22 +16,22 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from '../components/ui/dialog'
-import { useAuthStore } from '../stores/authStore'
-import { usePageTitle } from '../hooks/usePageTitle'
-import { changePasswordSchema, changeDisplayNameSchema } from '../lib/schemas'
+} from '../components/ui/dialog';
+import { useAuthStore } from '../stores/authStore';
+import { usePageTitle } from '../hooks/usePageTitle';
+import { changePasswordSchema, changeDisplayNameSchema } from '../lib/schemas';
 
 export default function Account() {
-  usePageTitle('Account Settings')
-  const user = useAuthStore((s) => s.user)
-  const updateDisplayName = useAuthStore((s) => s.updateDisplayName)
-  const updateUserPassword = useAuthStore((s) => s.updateUserPassword)
-  const deleteAccount = useAuthStore((s) => s.deleteAccount)
-  const navigate = useNavigate()
-  const [deleteOpen, setDeleteOpen] = useState(false)
-  const [deleteLoading, setDeleteLoading] = useState(false)
+  usePageTitle('Account Settings');
+  const user = useAuthStore((s) => s.user);
+  const updateDisplayName = useAuthStore((s) => s.updateDisplayName);
+  const updateUserPassword = useAuthStore((s) => s.updateUserPassword);
+  const deleteAccount = useAuthStore((s) => s.deleteAccount);
+  const navigate = useNavigate();
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
-  const isGoogleUser = user?.providerId === 'google.com'
+  const isGoogleUser = user?.providerId === 'google.com';
 
   // Display name form
   const {
@@ -42,11 +42,11 @@ export default function Account() {
   } = useForm({
     resolver: zodResolver(changeDisplayNameSchema),
     defaultValues: { name: user?.name ?? '' },
-  })
+  });
 
   useEffect(() => {
-    resetName({ name: user?.name ?? '' })
-  }, [user?.name])
+    resetName({ name: user?.name ?? '' });
+  }, [user?.name]);
 
   // Password form
   const {
@@ -57,7 +57,7 @@ export default function Account() {
     formState: { errors: pwdErrors, isSubmitting: pwdSubmitting },
   } = useForm({
     resolver: zodResolver(changePasswordSchema),
-  })
+  });
 
   // Delete form (email users only)
   const {
@@ -66,60 +66,72 @@ export default function Account() {
     formState: { errors: deleteErrors },
   } = useForm({
     resolver: zodResolver(z.object({ currentPassword: z.string().min(1, 'Required') })),
-  })
+  });
 
   const onNameSubmit = async (data) => {
     try {
-      await updateDisplayName(data.name)
-      toast.success('Display name updated')
+      await updateDisplayName(data.name);
+      toast.success('Display name updated');
     } catch (e) {
-      toast.error(e.message ?? 'Failed to update name')
+      toast.error(e.message ?? 'Failed to update name');
     }
-  }
+  };
 
   const onPwdSubmit = async (data) => {
     try {
-      await updateUserPassword(data.currentPassword, data.newPassword)
-      toast.success('Password updated')
-      resetPwd()
+      await updateUserPassword(data.currentPassword, data.newPassword);
+      toast.success('Password updated');
+      resetPwd();
     } catch (e) {
-      const msg = e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential'
-        ? 'Current password is incorrect.'
-        : e.code === 'auth/requires-recent-login'
-        ? 'Please sign out and sign in again to change your password.'
-        : e.message ?? 'Failed to update password'
-      toast.error(msg)
+      const msg =
+        e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential'
+          ? 'Current password is incorrect.'
+          : e.code === 'auth/requires-recent-login'
+            ? 'Please sign out and sign in again to change your password.'
+            : (e.message ?? 'Failed to update password');
+      toast.error(msg);
     }
-  }
+  };
 
   const onDeleteSubmit = async (data) => {
-    setDeleteLoading(true)
+    setDeleteLoading(true);
     try {
-      await deleteAccount(isGoogleUser ? undefined : data?.currentPassword)
-      toast.success('Account deleted')
-      navigate('/')
+      await deleteAccount(isGoogleUser ? undefined : data?.currentPassword);
+      toast.success('Account deleted');
+      navigate('/');
     } catch (e) {
-      const msg = e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential'
-        ? 'Current password is incorrect.'
-        : e.code === 'auth/requires-recent-login'
-        ? 'Please sign out and sign in again to delete your account.'
-        : e.message ?? 'Failed to delete account'
-      toast.error(msg)
-      setDeleteLoading(false)
-      setDeleteOpen(false)
+      const msg =
+        e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential'
+          ? 'Current password is incorrect.'
+          : e.code === 'auth/requires-recent-login'
+            ? 'Please sign out and sign in again to delete your account.'
+            : (e.message ?? 'Failed to delete account');
+      toast.error(msg);
+      setDeleteLoading(false);
+      setDeleteOpen(false);
     }
-  }
+  };
 
   // Password strength for new password
-  const newPwd = watchPwd('newPassword') ?? ''
-  const strength = [newPwd.length >= 8, /[A-Z]/.test(newPwd), /[0-9]/.test(newPwd), /[^A-Za-z0-9]/.test(newPwd)].filter(Boolean).length
-  const strengthColors = ['bg-destructive', 'bg-orange-500', 'bg-amber-500', 'bg-green-500']
-  const strengthLabels = ['Weak', 'Fair', 'Good', 'Strong']
+  const newPwd = watchPwd('newPassword') ?? '';
+  const strength = [
+    newPwd.length >= 8,
+    /[A-Z]/.test(newPwd),
+    /[0-9]/.test(newPwd),
+    /[^A-Za-z0-9]/.test(newPwd),
+  ].filter(Boolean).length;
+  const strengthColors = ['bg-destructive', 'bg-orange-500', 'bg-amber-500', 'bg-green-500'];
+  const strengthLabels = ['Weak', 'Fair', 'Good', 'Strong'];
 
   // Avatar: photoURL or initials
   const initials = user?.name
-    ? user.name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)
-    : user?.email?.[0]?.toUpperCase() ?? '?'
+    ? user.name
+        .split(' ')
+        .map((n) => n[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2)
+    : (user?.email?.[0]?.toUpperCase() ?? '?');
 
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-6 sm:space-y-8">
@@ -137,7 +149,8 @@ export default function Account() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1, duration: 0.4 }}
-        className="glass rounded-2xl p-6 space-y-6">
+        className="glass rounded-2xl p-6 space-y-6"
+      >
         <h2 className="text-lg font-semibold flex items-center gap-2">
           <User className="h-5 w-5 text-primary" />
           Profile
@@ -146,7 +159,11 @@ export default function Account() {
         {/* Avatar */}
         <div className="flex items-center gap-4">
           {user?.photoURL ? (
-            <img src={user.photoURL} alt={user.name} className="w-16 h-16 rounded-full object-cover" />
+            <img
+              src={user.photoURL}
+              alt={user.name}
+              className="w-16 h-16 rounded-full object-cover"
+            />
           ) : (
             <div className="w-16 h-16 rounded-full bg-gradient-to-br from-violet-500 to-cyan-400 flex items-center justify-center shrink-0">
               <span className="text-xl font-bold text-white">{initials}</span>
@@ -166,7 +183,9 @@ export default function Account() {
           <div>
             <label className="text-sm font-medium mb-1 block">Display Name</label>
             <Input {...regName('name')} placeholder="Your name" />
-            {nameErrors.name && <p className="text-destructive text-xs mt-1">{nameErrors.name.message}</p>}
+            {nameErrors.name && (
+              <p className="text-destructive text-xs mt-1">{nameErrors.name.message}</p>
+            )}
           </div>
           <Button type="submit" size="sm" disabled={nameSubmitting}>
             {nameSubmitting ? 'Saving...' : 'Save Name'}
@@ -179,7 +198,8 @@ export default function Account() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2, duration: 0.4 }}
-        className="glass rounded-2xl p-6 space-y-4">
+        className="glass rounded-2xl p-6 space-y-4"
+      >
         <h2 className="text-lg font-semibold flex items-center gap-2">
           <Lock className="h-5 w-5 text-primary" />
           Password
@@ -191,25 +211,38 @@ export default function Account() {
           <form onSubmit={handlePwdSubmit(onPwdSubmit)} className="space-y-3">
             <div>
               <PasswordInput placeholder="Current password" {...regPwd('currentPassword')} />
-              {pwdErrors.currentPassword && <p className="text-destructive text-xs mt-1">{pwdErrors.currentPassword.message}</p>}
+              {pwdErrors.currentPassword && (
+                <p className="text-destructive text-xs mt-1">{pwdErrors.currentPassword.message}</p>
+              )}
             </div>
             <div>
               <PasswordInput placeholder="New password" {...regPwd('newPassword')} />
-              {pwdErrors.newPassword && <p className="text-destructive text-xs mt-1">{pwdErrors.newPassword.message}</p>}
+              {pwdErrors.newPassword && (
+                <p className="text-destructive text-xs mt-1">{pwdErrors.newPassword.message}</p>
+              )}
               {newPwd.length > 0 && (
                 <div className="mt-2">
                   <div className="flex gap-1">
-                    {[0,1,2,3].map((i) => (
-                      <div key={i} className={`h-1 flex-1 rounded-full transition-colors ${i < strength ? strengthColors[strength - 1] : 'bg-muted'}`} />
+                    {[0, 1, 2, 3].map((i) => (
+                      <div
+                        key={i}
+                        className={`h-1 flex-1 rounded-full transition-colors ${i < strength ? strengthColors[strength - 1] : 'bg-muted'}`}
+                      />
                     ))}
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">{strengthLabels[strength - 1] ?? ''}</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {strengthLabels[strength - 1] ?? ''}
+                  </p>
                 </div>
               )}
             </div>
             <div>
               <PasswordInput placeholder="Confirm new password" {...regPwd('confirmNewPassword')} />
-              {pwdErrors.confirmNewPassword && <p className="text-destructive text-xs mt-1">{pwdErrors.confirmNewPassword.message}</p>}
+              {pwdErrors.confirmNewPassword && (
+                <p className="text-destructive text-xs mt-1">
+                  {pwdErrors.confirmNewPassword.message}
+                </p>
+              )}
             </div>
             <Button type="submit" size="sm" disabled={pwdSubmitting}>
               {pwdSubmitting ? 'Updating...' : 'Update Password'}
@@ -223,7 +256,8 @@ export default function Account() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3, duration: 0.4 }}
-        className="glass rounded-2xl p-6 space-y-4 border border-destructive/30">
+        className="glass rounded-2xl p-6 space-y-4 border border-destructive/30"
+      >
         <h2 className="text-lg font-semibold flex items-center gap-2 text-destructive">
           <AlertTriangle className="h-5 w-5" />
           Danger Zone
@@ -253,8 +287,14 @@ export default function Account() {
                 You will be prompted to re-authenticate with Google before your account is deleted.
               </p>
               <DialogFooter>
-                <Button variant="outline" onClick={() => setDeleteOpen(false)}>Cancel</Button>
-                <Button variant="destructive" onClick={() => onDeleteSubmit({})} disabled={deleteLoading}>
+                <Button variant="outline" onClick={() => setDeleteOpen(false)}>
+                  Cancel
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={() => onDeleteSubmit({})}
+                  disabled={deleteLoading}
+                >
                   {deleteLoading ? 'Deleting...' : 'Delete Account'}
                 </Button>
               </DialogFooter>
@@ -262,12 +302,20 @@ export default function Account() {
           ) : (
             <form onSubmit={handleDeleteSubmit(onDeleteSubmit)} className="space-y-4">
               <div>
-                <label className="text-sm font-medium mb-1 block">Enter your password to confirm</label>
+                <label className="text-sm font-medium mb-1 block">
+                  Enter your password to confirm
+                </label>
                 <PasswordInput placeholder="Current password" {...regDelete('currentPassword')} />
-                {deleteErrors.currentPassword && <p className="text-destructive text-xs mt-1">{deleteErrors.currentPassword.message}</p>}
+                {deleteErrors.currentPassword && (
+                  <p className="text-destructive text-xs mt-1">
+                    {deleteErrors.currentPassword.message}
+                  </p>
+                )}
               </div>
               <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setDeleteOpen(false)}>Cancel</Button>
+                <Button type="button" variant="outline" onClick={() => setDeleteOpen(false)}>
+                  Cancel
+                </Button>
                 <Button type="submit" variant="destructive" disabled={deleteLoading}>
                   {deleteLoading ? 'Deleting...' : 'Delete Account'}
                 </Button>
@@ -277,5 +325,5 @@ export default function Account() {
         </DialogContent>
       </Dialog>
     </div>
-  )
+  );
 }

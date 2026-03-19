@@ -1,6 +1,6 @@
-import { Component } from "react";
-import { AlertTriangle } from "lucide-react";
-import { Button } from "./ui/button";
+import { Component } from 'react';
+import { AlertTriangle } from 'lucide-react';
+import { Button } from './ui/button';
 
 export default class ErrorBoundary extends Component {
   constructor(props) {
@@ -22,7 +22,7 @@ export default class ErrorBoundary extends Component {
             </div>
             <h2 className="text-xl font-bold">Something went wrong</h2>
             <p className="text-sm text-muted-foreground">
-              {this.state.error?.message || "An unexpected error occurred."}
+              {this.state.error?.message || 'An unexpected error occurred.'}
             </p>
             <Button onClick={() => window.location.reload()}>Try Again</Button>
           </div>

@@ -1,4 +1,4 @@
-import MovieCardSkeleton from "./MovieCardSkeleton";
+import MovieCardSkeleton from './MovieCardSkeleton';
 
 export default function PageSkeleton() {
   return (

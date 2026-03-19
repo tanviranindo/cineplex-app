@@ -1,25 +1,23 @@
-import { useState, useRef, useEffect, useCallback } from "react";
-import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
-import { motion } from "framer-motion";
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { useQuery, useInfiniteQuery } from '@tanstack/react-query';
+import { motion } from 'framer-motion';
+import { Search, X, Sparkles, Film, AlertTriangle, Clock, Trash2 } from 'lucide-react';
+import { Input } from '../components/ui/input';
+import { Badge } from '../components/ui/badge';
+import MovieCard from '../components/MovieCard';
+import MovieCardSkeleton from '../components/MovieCardSkeleton';
 import {
-  Search,
-  X,
-  Sparkles,
-  Film,
-  AlertTriangle,
-  Clock,
-  Trash2,
-} from "lucide-react";
-import { Input } from "../components/ui/input";
-import { Badge } from "../components/ui/badge";
-import MovieCard from "../components/MovieCard";
-import MovieCardSkeleton from "../components/MovieCardSkeleton";
-import { searchMovies, getTrendingMovies, getGenres, discoverByGenre, backdropUrl } from "../services/tmdb";
-import { useDebounce } from "../hooks/useDebounce";
-import { usePageTitle } from "../hooks/usePageTitle";
-import { queryKeys } from "../lib/queryKeys";
-import { useIntersectionObserver } from "../hooks/useIntersectionObserver";
-import { usePreferencesStore } from "../stores/preferencesStore";
+  searchMovies,
+  getTrendingMovies,
+  getGenres,
+  discoverByGenre,
+  backdropUrl,
+} from '../services/tmdb';
+import { useDebounce } from '../hooks/useDebounce';
+import { usePageTitle } from '../hooks/usePageTitle';
+import { queryKeys } from '../lib/queryKeys';
+import { useIntersectionObserver } from '../hooks/useIntersectionObserver';
+import { usePreferencesStore } from '../stores/preferencesStore';
 
 const container = {
   hidden: { opacity: 0 },
@@ -30,8 +28,8 @@ const container = {
 };
 
 export default function SearchMovies() {
-  usePageTitle("Search Movies");
-  const [query, setQuery] = useState("");
+  usePageTitle('Search Movies');
+  const [query, setQuery] = useState('');
   const [activeGenre, setActiveGenre] = useState(null);
   const inputRef = useRef(null);
   const searchHistory = usePreferencesStore((s) => s.searchHistory);
@@ -41,17 +39,17 @@ export default function SearchMovies() {
 
   useEffect(() => {
     const handleKey = (e) => {
-      if (e.key === "/" && document.activeElement?.tagName !== "INPUT") {
+      if (e.key === '/' && document.activeElement?.tagName !== 'INPUT') {
         e.preventDefault();
         inputRef.current?.focus();
       }
-      if (e.key === "Escape") {
-        setQuery("");
+      if (e.key === 'Escape') {
+        setQuery('');
         inputRef.current?.blur();
       }
     };
-    window.addEventListener("keydown", handleKey);
-    return () => window.removeEventListener("keydown", handleKey);
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
   }, []);
   const debouncedQuery = useDebounce(query, 400);
 
@@ -94,13 +92,13 @@ export default function SearchMovies() {
   });
 
   const { data: featured, isLoading: featuredLoading } = useQuery({
-    queryKey: ["trending"],
+    queryKey: ['trending'],
     queryFn: getTrendingMovies,
     staleTime: 1000 * 60 * 30,
   });
 
   const { data: genres } = useQuery({
-    queryKey: ["genres"],
+    queryKey: ['genres'],
     queryFn: getGenres,
     staleTime: Infinity,
   });
@@ -119,8 +117,16 @@ export default function SearchMovies() {
     useCallback(() => {
       if (showSearch && hasNextSearch && !fetchingNextSearch) fetchNextSearch();
       if (showGenreDiscover && hasNextGenre && !fetchingNextGenre) fetchNextGenre();
-    }, [showSearch, hasNextSearch, fetchingNextSearch, fetchNextSearch,
-        showGenreDiscover, hasNextGenre, fetchingNextGenre, fetchNextGenre])
+    }, [
+      showSearch,
+      hasNextSearch,
+      fetchingNextSearch,
+      fetchNextSearch,
+      showGenreDiscover,
+      hasNextGenre,
+      fetchingNextGenre,
+      fetchNextGenre,
+    ])
   );
 
   // Save successful search queries to history
@@ -135,7 +141,7 @@ export default function SearchMovies() {
   };
 
   const handleGenreClick = (genreId) => {
-    if (query.length > 0) setQuery("");
+    if (query.length > 0) setQuery('');
     setActiveGenre((prev) => (prev === genreId ? null : genreId));
     // no setPage needed
   };
@@ -151,7 +157,7 @@ export default function SearchMovies() {
         <motion.div
           initial={{ opacity: 0, y: -40, scale: 0.96 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ type: "spring", stiffness: 200, damping: 20 }}
+          transition={{ type: 'spring', stiffness: 200, damping: 20 }}
           className="relative text-center mb-10 rounded-2xl overflow-hidden glass py-12 px-6"
         >
           {featured?.[0]?.backdrop_path && (
@@ -178,7 +184,7 @@ export default function SearchMovies() {
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.15, type: "spring", stiffness: 300, damping: 25 }}
+          transition={{ delay: 0.15, type: 'spring', stiffness: 300, damping: 25 }}
           className="max-w-2xl mx-auto mb-6"
         >
           <div className="relative search-glow rounded-xl">
@@ -194,7 +200,7 @@ export default function SearchMovies() {
             {query && (
               <button
                 onClick={() => {
-                  setQuery("");
+                  setQuery('');
                 }}
                 aria-label="Clear search"
                 className="absolute right-4 top-1/2 -translate-y-1/2 p-1 rounded-full text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
@@ -205,10 +211,10 @@ export default function SearchMovies() {
           </div>
 
           <p className="text-center text-xs text-muted-foreground/50 mt-2">
-            Press{" "}
+            Press{' '}
             <kbd className="px-1.5 py-0.5 rounded bg-muted text-muted-foreground text-[10px] font-mono">
               /
-            </kbd>{" "}
+            </kbd>{' '}
             to search
           </p>
 
@@ -222,10 +228,10 @@ export default function SearchMovies() {
                     onClick={() => handleGenreClick(Number(id))}
                     className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
                       showSearch
-                        ? "opacity-40 cursor-pointer"
+                        ? 'opacity-40 cursor-pointer'
                         : activeGenre === Number(id)
-                        ? "bg-primary text-primary-foreground border-primary"
-                        : "bg-transparent text-muted-foreground border-border hover:text-foreground hover:border-foreground/30"
+                          ? 'bg-primary text-primary-foreground border-primary'
+                          : 'bg-transparent text-muted-foreground border-border hover:text-foreground hover:border-foreground/30'
                     }`}
                   >
                     {name}
@@ -254,17 +260,14 @@ export default function SearchMovies() {
               <div className="py-20 text-center">
                 <AlertTriangle className="h-12 w-12 text-destructive mx-auto mb-4" />
                 <p className="text-lg font-medium">Something went wrong</p>
-                <p className="text-muted-foreground mt-1">
-                  Please try again later.
-                </p>
+                <p className="text-muted-foreground mt-1">Please try again later.</p>
               </div>
             ) : activeMoviesList.length > 0 ? (
               <>
                 {/* Result count */}
                 <div className="flex items-center justify-between mb-6">
                   <Badge variant="secondary" className="text-sm px-3 py-1">
-                    {activeTotal} result{activeTotal !== 1 ? "s" : ""}{" "}
-                    found
+                    {activeTotal} result{activeTotal !== 1 ? 's' : ''} found
                   </Badge>
                 </div>
 
@@ -285,7 +288,9 @@ export default function SearchMovies() {
                 <div ref={loadMoreRef} className="h-10" />
                 {(fetchingNextSearch || fetchingNextGenre) && (
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6 mt-4">
-                    {Array.from({ length: 5 }).map((_, i) => <MovieCardSkeleton key={i} />)}
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <MovieCardSkeleton key={i} />
+                    ))}
                   </div>
                 )}
               </>
@@ -293,9 +298,7 @@ export default function SearchMovies() {
               <div className="py-20 text-center">
                 <Film className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
                 <p className="text-lg font-medium">No movies found</p>
-                <p className="text-muted-foreground mt-1">
-                  Try a different search term.
-                </p>
+                <p className="text-muted-foreground mt-1">Try a different search term.</p>
               </div>
             )}
           </div>
@@ -328,7 +331,10 @@ export default function SearchMovies() {
                         {q}
                       </button>
                       <button
-                        onClick={(e) => { e.stopPropagation(); removeSearchQuery(q); }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeSearchQuery(q);
+                        }}
                         className="opacity-0 group-hover:opacity-100 transition-opacity"
                         aria-label={`Remove "${q}" from history`}
                       >

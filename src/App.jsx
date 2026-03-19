@@ -1,24 +1,24 @@
-import { useEffect, lazy, Suspense } from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { Toaster } from "sonner";
-import Layout from "./components/Layout";
-import ProtectedRoute from "./components/ProtectedRoute";
-import PageSkeleton from "./components/PageSkeleton";
-import LoginModal from "./components/LoginModal";
-import { useAuthStore } from "./stores/authStore";
-import { useWatchlistStore } from "./stores/watchlistStore";
-import { useThemeStore } from "./stores/themeStore";
-import { usePreferencesStore } from "./stores/preferencesStore";
+import { useEffect, lazy, Suspense } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { Toaster } from 'sonner';
+import Layout from './components/Layout';
+import ProtectedRoute from './components/ProtectedRoute';
+import PageSkeleton from './components/PageSkeleton';
+import LoginModal from './components/LoginModal';
+import { useAuthStore } from './stores/authStore';
+import { useWatchlistStore } from './stores/watchlistStore';
+import { useThemeStore } from './stores/themeStore';
+import { usePreferencesStore } from './stores/preferencesStore';
 
-const Home = lazy(() => import("./pages/Home"));
-const SignIn = lazy(() => import("./pages/SignIn"));
-const SignUp = lazy(() => import("./pages/SignUp"));
-const SearchMovies = lazy(() => import("./pages/SearchMovies"));
-const MovieDetail = lazy(() => import("./pages/MovieDetail"));
-const Watchlist = lazy(() => import("./pages/Watchlist"));
-const Account = lazy(() => import("./pages/Account"));
-const Browse = lazy(() => import("./pages/Browse"));
-const PersonDetail = lazy(() => import("./pages/PersonDetail"));
+const Home = lazy(() => import('./pages/Home'));
+const SignIn = lazy(() => import('./pages/SignIn'));
+const SignUp = lazy(() => import('./pages/SignUp'));
+const SearchMovies = lazy(() => import('./pages/SearchMovies'));
+const MovieDetail = lazy(() => import('./pages/MovieDetail'));
+const Watchlist = lazy(() => import('./pages/Watchlist'));
+const Account = lazy(() => import('./pages/Account'));
+const Browse = lazy(() => import('./pages/Browse'));
+const PersonDetail = lazy(() => import('./pages/PersonDetail'));
 
 export default function App() {
   const initAuth = useAuthStore((s) => s.initAuth);
@@ -92,12 +92,7 @@ export default function App() {
         </Routes>
       </Suspense>
       <LoginModal />
-      <Toaster
-        position="bottom-right"
-        theme={theme}
-        richColors
-        offset="80px"
-      />
+      <Toaster position="bottom-right" theme={theme} richColors offset="80px" />
     </BrowserRouter>
   );
 }

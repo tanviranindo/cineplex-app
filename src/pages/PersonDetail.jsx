@@ -1,7 +1,7 @@
-import { useState } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { motion } from "framer-motion";
+import { useState } from 'react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { motion } from 'framer-motion';
 import {
   ArrowLeft,
   Users,
@@ -11,12 +11,12 @@ import {
   Film,
   ExternalLink,
   Star,
-} from "lucide-react";
-import { Button } from "../components/ui/button";
-import { Badge } from "../components/ui/badge";
-import MovieCard from "../components/MovieCard";
-import { getPersonById, profileUrl } from "../services/tmdb";
-import { usePageTitle } from "../hooks/usePageTitle";
+} from 'lucide-react';
+import { Button } from '../components/ui/button';
+import { Badge } from '../components/ui/badge';
+import MovieCard from '../components/MovieCard';
+import { getPersonById, profileUrl } from '../services/tmdb';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 const PLACEHOLDER_PERSON =
   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='450' fill='%231a1a2e'%3E%3Crect width='300' height='450'/%3E%3Ctext x='150' y='225' text-anchor='middle' fill='%238b5cf6' font-size='16' font-family='sans-serif'%3ENo Photo%3C/text%3E%3C/svg%3E";
@@ -65,8 +65,12 @@ export default function PersonDetail() {
   const [showAllCast, setShowAllCast] = useState(false);
   const [showAllCrew, setShowAllCrew] = useState(false);
 
-  const { data: person, isLoading, isError } = useQuery({
-    queryKey: ["person", "detail", id],
+  const {
+    data: person,
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ['person', 'detail', id],
     queryFn: () => getPersonById(id),
   });
 
@@ -86,9 +90,9 @@ export default function PersonDetail() {
     );
   }
 
-  const photo = profileUrl(person.profilePath, "h632") || PLACEHOLDER_PERSON;
+  const photo = profileUrl(person.profilePath, 'h632') || PLACEHOLDER_PERSON;
   const age = calculateAge(person.birthday, person.deathday);
-  const isDirector = person.department === "Directing";
+  const isDirector = person.department === 'Directing';
   const hasCast = person.castCredits?.length > 0;
   const hasCrew = person.crewCredits?.length > 0;
   const INITIAL_SHOW = 10;
@@ -146,9 +150,7 @@ export default function PersonDetail() {
             className="flex-1 space-y-5"
           >
             <div>
-              <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
-                {person.name}
-              </h1>
+              <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">{person.name}</h1>
               <div className="flex flex-wrap gap-2 mt-3">
                 <Badge variant="secondary" className="gap-1">
                   {isDirector ? (
@@ -156,26 +158,26 @@ export default function PersonDetail() {
                   ) : (
                     <Users className="h-3 w-3" />
                   )}
-                  {person.department || "Acting"}
+                  {person.department || 'Acting'}
                 </Badge>
                 {person.birthday && (
                   <Badge variant="secondary" className="gap-1">
                     <Calendar className="h-3 w-3" />
-                    {new Date(person.birthday).toLocaleDateString("en-US", {
-                      month: "long",
-                      day: "numeric",
-                      year: "numeric",
+                    {new Date(person.birthday).toLocaleDateString('en-US', {
+                      month: 'long',
+                      day: 'numeric',
+                      year: 'numeric',
                     })}
                     {age != null && !person.deathday && ` (age ${age})`}
                   </Badge>
                 )}
                 {person.deathday && (
                   <Badge variant="outline" className="gap-1 text-muted-foreground">
-                    Died{" "}
-                    {new Date(person.deathday).toLocaleDateString("en-US", {
-                      month: "long",
-                      day: "numeric",
-                      year: "numeric",
+                    Died{' '}
+                    {new Date(person.deathday).toLocaleDateString('en-US', {
+                      month: 'long',
+                      day: 'numeric',
+                      year: 'numeric',
                     })}
                     {age != null && ` (age ${age})`}
                   </Badge>
@@ -197,7 +199,7 @@ export default function PersonDetail() {
                 </h3>
                 <p className="text-sm leading-relaxed whitespace-pre-line">
                   {person.biography.length > 800
-                    ? person.biography.slice(0, 800) + "..."
+                    ? person.biography.slice(0, 800) + '...'
                     : person.biography}
                 </p>
               </div>
@@ -224,9 +226,9 @@ export default function PersonDetail() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-50px" }}
+          viewport={{ once: true, margin: '-50px' }}
           transition={{ duration: 0.5 }}
-          className={`mt-12 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 ${!hasCrew ? "pb-8" : ""}`}
+          className={`mt-12 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 ${!hasCrew ? 'pb-8' : ''}`}
         >
           <div className="flex items-center gap-2 mb-6">
             <Badge variant="secondary" className="gap-1">
@@ -234,9 +236,7 @@ export default function PersonDetail() {
               Actor
             </Badge>
             <h2 className="text-xl font-bold">Known For</h2>
-            <span className="text-sm text-muted-foreground">
-              ({person.castCredits.length})
-            </span>
+            <span className="text-sm text-muted-foreground">({person.castCredits.length})</span>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
             {visibleCast.map((movie) => (
@@ -246,7 +246,7 @@ export default function PersonDetail() {
           {person.castCredits.length > INITIAL_SHOW && (
             <div className="flex justify-center mt-6">
               <Button variant="outline" onClick={() => setShowAllCast((s) => !s)}>
-                {showAllCast ? "Show Less" : `Show All ${person.castCredits.length} Credits`}
+                {showAllCast ? 'Show Less' : `Show All ${person.castCredits.length} Credits`}
               </Button>
             </div>
           )}
@@ -258,7 +258,7 @@ export default function PersonDetail() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-50px" }}
+          viewport={{ once: true, margin: '-50px' }}
           transition={{ duration: 0.5 }}
           className="mt-12 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-8"
         >
@@ -268,9 +268,7 @@ export default function PersonDetail() {
               Director
             </Badge>
             <h2 className="text-xl font-bold">Directed</h2>
-            <span className="text-sm text-muted-foreground">
-              ({person.crewCredits.length})
-            </span>
+            <span className="text-sm text-muted-foreground">({person.crewCredits.length})</span>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
             {visibleCrew.map((movie) => (
@@ -280,7 +278,7 @@ export default function PersonDetail() {
           {person.crewCredits.length > INITIAL_SHOW && (
             <div className="flex justify-center mt-6">
               <Button variant="outline" onClick={() => setShowAllCrew((s) => !s)}>
-                {showAllCrew ? "Show Less" : `Show All ${person.crewCredits.length} Credits`}
+                {showAllCrew ? 'Show Less' : `Show All ${person.crewCredits.length} Credits`}
               </Button>
             </div>
           )}

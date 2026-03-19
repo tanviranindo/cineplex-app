@@ -1,24 +1,24 @@
-import { useState, useRef } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
-import { Film, User, Mail, Lock, AlertCircle } from "lucide-react";
-import { toast } from "sonner";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/input";
-import PasswordInput from "../components/PasswordInput";
-import GoogleIcon from "../components/GoogleIcon";
-import AuthLayout from "../components/AuthLayout";
-import { useAuthStore } from "../stores/authStore";
-import { usePageTitle } from "../hooks/usePageTitle";
-import { signupSchema } from "../lib/schemas";
+import { useState, useRef } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { Film, User, Mail, Lock, AlertCircle } from 'lucide-react';
+import { toast } from 'sonner';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
+import PasswordInput from '../components/PasswordInput';
+import GoogleIcon from '../components/GoogleIcon';
+import AuthLayout from '../components/AuthLayout';
+import { useAuthStore } from '../stores/authStore';
+import { usePageTitle } from '../hooks/usePageTitle';
+import { signupSchema } from '../lib/schemas';
 
 export default function SignUp() {
-  usePageTitle("Create Account");
+  usePageTitle('Create Account');
   const [googleLoading, setGoogleLoading] = useState(false);
   const googleInFlight = useRef(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   const signup = useAuthStore((s) => s.signup);
@@ -33,24 +33,24 @@ export default function SignUp() {
     formState: { errors, isSubmitting },
   } = useForm({ resolver: zodResolver(signupSchema) });
 
-  const pwd = watch("password") ?? "";
+  const pwd = watch('password') ?? '';
   const strength = [
     pwd.length >= 8,
     /[A-Z]/.test(pwd),
     /[0-9]/.test(pwd),
     /[^A-Za-z0-9]/.test(pwd),
   ].filter(Boolean).length;
-  const colors = ["bg-destructive", "bg-orange-500", "bg-amber-500", "bg-green-500"];
-  const labels = ["Weak", "Fair", "Good", "Strong"];
+  const colors = ['bg-destructive', 'bg-orange-500', 'bg-amber-500', 'bg-green-500'];
+  const labels = ['Weak', 'Fair', 'Good', 'Strong'];
 
   const onSubmit = async (data) => {
-    setError("");
+    setError('');
     setLoading(true);
     const result = await signup(data.name, data.email, data.password);
     setLoading(false);
     if (result.ok) {
-      toast.success("Account created!");
-      navigate("/search");
+      toast.success('Account created!');
+      navigate('/search');
     } else {
       setError(result.error);
     }
@@ -60,12 +60,12 @@ export default function SignUp() {
     if (googleInFlight.current) return;
     googleInFlight.current = true;
     setGoogleLoading(true);
-    setError("");
+    setError('');
     const result = await loginWithGoogle();
     googleInFlight.current = false;
     setGoogleLoading(false);
     if (result.ok) {
-      navigate("/search");
+      navigate('/search');
     } else {
       setError(result.error);
     }
@@ -88,7 +88,7 @@ export default function SignUp() {
               transition={
                 reducedMotion
                   ? { duration: 0 }
-                  : { type: "spring", stiffness: 260, damping: 20, delay: 0.1 }
+                  : { type: 'spring', stiffness: 260, damping: 20, delay: 0.1 }
               }
               className="p-3 sm:p-4 rounded-2xl bg-gradient-to-br from-violet-500 to-cyan-400 shadow-lg shadow-violet-500/25"
             >
@@ -105,25 +105,36 @@ export default function SignUp() {
             <div>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input placeholder="Full name" {...register("name")} className="pl-10" />
+                <Input placeholder="Full name" {...register('name')} className="pl-10" />
               </div>
-              {errors.name && <p className="text-destructive text-xs mt-1">{errors.name.message}</p>}
+              {errors.name && (
+                <p className="text-destructive text-xs mt-1">{errors.name.message}</p>
+              )}
             </div>
 
             <div>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input type="email" placeholder="Email address" {...register("email")} className="pl-10" />
+                <Input
+                  type="email"
+                  placeholder="Email address"
+                  {...register('email')}
+                  className="pl-10"
+                />
               </div>
-              {errors.email && <p className="text-destructive text-xs mt-1">{errors.email.message}</p>}
+              {errors.email && (
+                <p className="text-destructive text-xs mt-1">{errors.email.message}</p>
+              )}
             </div>
 
             <div>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
-                <PasswordInput {...register("password")} className="pl-10" placeholder="Password" />
+                <PasswordInput {...register('password')} className="pl-10" placeholder="Password" />
               </div>
-              {errors.password && <p className="text-destructive text-xs mt-1">{errors.password.message}</p>}
+              {errors.password && (
+                <p className="text-destructive text-xs mt-1">{errors.password.message}</p>
+              )}
               {pwd.length > 0 && (
                 <div className="mt-2">
                   <div className="flex gap-1">
@@ -131,12 +142,12 @@ export default function SignUp() {
                       <div
                         key={i}
                         className={`h-1 flex-1 rounded-full transition-colors ${
-                          i < strength ? colors[strength - 1] : "bg-muted"
+                          i < strength ? colors[strength - 1] : 'bg-muted'
                         }`}
                       />
                     ))}
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">{labels[strength - 1] ?? ""}</p>
+                  <p className="text-xs text-muted-foreground mt-1">{labels[strength - 1] ?? ''}</p>
                 </div>
               )}
             </div>
@@ -144,7 +155,11 @@ export default function SignUp() {
             <div>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
-                <PasswordInput {...register("confirmPassword")} className="pl-10" placeholder="Confirm password" />
+                <PasswordInput
+                  {...register('confirmPassword')}
+                  className="pl-10"
+                  placeholder="Confirm password"
+                />
               </div>
               {errors.confirmPassword && (
                 <p className="text-destructive text-xs mt-1">{errors.confirmPassword.message}</p>
@@ -168,7 +183,7 @@ export default function SignUp() {
             </div>
 
             <Button type="submit" className="w-full" disabled={loading || isSubmitting}>
-              {loading ? "Please wait..." : "Create Account"}
+              {loading ? 'Please wait...' : 'Create Account'}
             </Button>
           </form>
 
@@ -181,9 +196,15 @@ export default function SignUp() {
             </div>
           </div>
 
-          <Button type="button" variant="outline" className="w-full gap-2" onClick={handleGoogleSignIn} disabled={googleLoading}>
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full gap-2"
+            onClick={handleGoogleSignIn}
+            disabled={googleLoading}
+          >
             <GoogleIcon />
-            {googleLoading ? "Signing in..." : "Continue with Google"}
+            {googleLoading ? 'Signing in...' : 'Continue with Google'}
           </Button>
 
           <div className="mt-6 text-center">

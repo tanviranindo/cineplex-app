@@ -1,8 +1,8 @@
-import { useCallback, useMemo, useState, useRef, useEffect } from "react";
-import { createPortal } from "react-dom";
-import { useSearchParams } from "react-router-dom";
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
-import { motion, AnimatePresence } from "framer-motion";
+import { useCallback, useMemo, useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
+import { useSearchParams } from 'react-router-dom';
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Film,
   AlertTriangle,
@@ -17,54 +17,54 @@ import {
   X,
   Search,
   ChevronDown,
-} from "lucide-react";
-import { Badge } from "../components/ui/badge";
-import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/input";
+} from 'lucide-react';
+import { Badge } from '../components/ui/badge';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../components/ui/select";
-import MovieCard from "../components/MovieCard";
-import MovieCardSkeleton from "../components/MovieCardSkeleton";
-import { discoverMovies, getGenres, searchPeople, profileUrl } from "../services/tmdb";
-import { queryKeys } from "../lib/queryKeys";
-import { useIntersectionObserver } from "../hooks/useIntersectionObserver";
-import { useDebounce } from "../hooks/useDebounce";
-import { usePageTitle } from "../hooks/usePageTitle";
+} from '../components/ui/select';
+import MovieCard from '../components/MovieCard';
+import MovieCardSkeleton from '../components/MovieCardSkeleton';
+import { discoverMovies, getGenres, searchPeople, profileUrl } from '../services/tmdb';
+import { queryKeys } from '../lib/queryKeys';
+import { useIntersectionObserver } from '../hooks/useIntersectionObserver';
+import { useDebounce } from '../hooks/useDebounce';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 const SORT_OPTIONS = [
-  { value: "popularity.desc",          label: "Popular",   icon: Flame },
-  { value: "vote_average.desc",        label: "Top Rated", icon: Star },
-  { value: "release_date.desc",        label: "New",       icon: CalendarClock },
-  { value: "primary_release_date.asc", label: "Upcoming",  icon: CalendarDays },
+  { value: 'popularity.desc', label: 'Popular', icon: Flame },
+  { value: 'vote_average.desc', label: 'Top Rated', icon: Star },
+  { value: 'release_date.desc', label: 'New', icon: CalendarClock },
+  { value: 'primary_release_date.asc', label: 'Upcoming', icon: CalendarDays },
 ];
 
 const LANGUAGE_OPTIONS = [
-  { value: "", label: "Any Language" },
-  { value: "en", label: "English" },
-  { value: "es", label: "Spanish" },
-  { value: "fr", label: "French" },
-  { value: "de", label: "German" },
-  { value: "ja", label: "Japanese" },
-  { value: "ko", label: "Korean" },
-  { value: "hi", label: "Hindi" },
-  { value: "zh", label: "Chinese" },
-  { value: "it", label: "Italian" },
-  { value: "pt", label: "Portuguese" },
-  { value: "ru", label: "Russian" },
+  { value: '', label: 'Any Language' },
+  { value: 'en', label: 'English' },
+  { value: 'es', label: 'Spanish' },
+  { value: 'fr', label: 'French' },
+  { value: 'de', label: 'German' },
+  { value: 'ja', label: 'Japanese' },
+  { value: 'ko', label: 'Korean' },
+  { value: 'hi', label: 'Hindi' },
+  { value: 'zh', label: 'Chinese' },
+  { value: 'it', label: 'Italian' },
+  { value: 'pt', label: 'Portuguese' },
+  { value: 'ru', label: 'Russian' },
 ];
 
 const RATING_OPTIONS = [
-  { value: "", label: "Any Rating" },
-  { value: "9", label: "9+ Masterpiece" },
-  { value: "8", label: "8+ Excellent" },
-  { value: "7", label: "7+ Great" },
-  { value: "6", label: "6+ Good" },
-  { value: "5", label: "5+ Average" },
+  { value: '', label: 'Any Rating' },
+  { value: '9', label: '9+ Masterpiece' },
+  { value: '8', label: '8+ Excellent' },
+  { value: '7', label: '7+ Great' },
+  { value: '6', label: '6+ Good' },
+  { value: '5', label: '5+ Average' },
 ];
 
 // Staggered grid animation — cards slide up with spring physics
@@ -82,12 +82,12 @@ const cardVariant = {
     opacity: 1,
     y: 0,
     scale: 1,
-    transition: { type: "spring", stiffness: 300, damping: 24 },
+    transition: { type: 'spring', stiffness: 300, damping: 24 },
   },
 };
 
 function PersonSearch({ label, icon: Icon, onSelect, selectedPerson, onClear }) {
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState('');
   const [open, setOpen] = useState(false);
   const [dropdownPos, setDropdownPos] = useState(null);
   const debouncedQuery = useDebounce(query, 300);
@@ -95,7 +95,7 @@ function PersonSearch({ label, icon: Icon, onSelect, selectedPerson, onClear }) 
   const inputRef = useRef(null);
 
   const { data: results = [], isLoading } = useQuery({
-    queryKey: ["people", "search", debouncedQuery],
+    queryKey: ['people', 'search', debouncedQuery],
     queryFn: () => searchPeople(debouncedQuery),
     enabled: debouncedQuery.length >= 2,
     staleTime: 1000 * 60 * 5,
@@ -115,12 +115,12 @@ function PersonSearch({ label, icon: Icon, onSelect, selectedPerson, onClear }) 
   useEffect(() => {
     if (open) {
       updatePosition();
-      window.addEventListener("scroll", updatePosition, true);
-      window.addEventListener("resize", updatePosition);
+      window.addEventListener('scroll', updatePosition, true);
+      window.addEventListener('resize', updatePosition);
     }
     return () => {
-      window.removeEventListener("scroll", updatePosition, true);
-      window.removeEventListener("resize", updatePosition);
+      window.removeEventListener('scroll', updatePosition, true);
+      window.removeEventListener('resize', updatePosition);
     };
   }, [open, updatePosition]);
 
@@ -128,11 +128,11 @@ function PersonSearch({ label, icon: Icon, onSelect, selectedPerson, onClear }) 
     const handleClickOutside = (e) => {
       // Close if click is outside both the input wrapper and the portal dropdown
       const inWrapper = wrapperRef.current?.contains(e.target);
-      const inPortal = e.target.closest?.("[data-person-dropdown]");
+      const inPortal = e.target.closest?.('[data-person-dropdown]');
       if (!inWrapper && !inPortal) setOpen(false);
     };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   const showDropdown = open && debouncedQuery.length >= 2 && dropdownPos;
@@ -168,8 +168,13 @@ function PersonSearch({ label, icon: Icon, onSelect, selectedPerson, onClear }) 
           type="text"
           placeholder={label}
           value={query}
-          onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
-          onFocus={() => { if (query.length >= 2) setOpen(true); }}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setOpen(true);
+          }}
+          onFocus={() => {
+            if (query.length >= 2) setOpen(true);
+          }}
           className="h-9 pl-9 pr-3 text-xs"
         />
       </div>
@@ -178,7 +183,12 @@ function PersonSearch({ label, icon: Icon, onSelect, selectedPerson, onClear }) 
           <div
             data-person-dropdown
             className="fixed z-[100] rounded-lg border border-border bg-popover text-popover-foreground shadow-lg backdrop-blur-xl overflow-hidden"
-            style={{ top: dropdownPos.top, left: dropdownPos.left, width: dropdownPos.width, maxHeight: `calc(100vh - ${dropdownPos.top}px - 16px)` }}
+            style={{
+              top: dropdownPos.top,
+              left: dropdownPos.left,
+              width: dropdownPos.width,
+              maxHeight: `calc(100vh - ${dropdownPos.top}px - 16px)`,
+            }}
           >
             {isLoading ? (
               <div className="px-3 py-4 text-xs text-muted-foreground text-center">
@@ -195,7 +205,7 @@ function PersonSearch({ label, icon: Icon, onSelect, selectedPerson, onClear }) 
                     key={person.id}
                     onClick={() => {
                       onSelect(person);
-                      setQuery("");
+                      setQuery('');
                       setOpen(false);
                     }}
                     className="flex items-center gap-3 w-full px-3 py-2 text-left text-sm hover:bg-accent transition-colors"
@@ -227,7 +237,7 @@ function PersonSearch({ label, icon: Icon, onSelect, selectedPerson, onClear }) 
 }
 
 export default function Browse() {
-  usePageTitle("Browse Movies");
+  usePageTitle('Browse Movies');
   const [searchParams, setSearchParams] = useSearchParams();
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [selectedActor, setSelectedActor] = useState(null);
@@ -239,23 +249,26 @@ export default function Browse() {
     [currentYear]
   );
 
-  const genreId   = searchParams.get("genre") ? Number(searchParams.get("genre")) : null;
-  const sortBy    = searchParams.get("sort") || "popularity.desc";
-  const year      = searchParams.get("year") ? Number(searchParams.get("year")) : null;
-  const language  = searchParams.get("lang") || "";
-  const ratingGte = searchParams.get("rating") || "";
+  const genreId = searchParams.get('genre') ? Number(searchParams.get('genre')) : null;
+  const sortBy = searchParams.get('sort') || 'popularity.desc';
+  const year = searchParams.get('year') ? Number(searchParams.get('year')) : null;
+  const language = searchParams.get('lang') || '';
+  const ratingGte = searchParams.get('rating') || '';
 
-  const setFilter = useCallback((key, value) => {
-    setSearchParams(
-      (prev) => {
-        const next = new URLSearchParams(prev);
-        if (value == null || value === "") next.delete(key);
-        else next.set(key, String(value));
-        return next;
-      },
-      { replace: true }
-    );
-  }, [setSearchParams]);
+  const setFilter = useCallback(
+    (key, value) => {
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          if (value == null || value === '') next.delete(key);
+          else next.set(key, String(value));
+          return next;
+        },
+        { replace: true }
+      );
+    },
+    [setSearchParams]
+  );
 
   const clearAllFilters = useCallback(() => {
     setSearchParams({}, { replace: true });
@@ -263,15 +276,18 @@ export default function Browse() {
     setSelectedDirector(null);
   }, [setSearchParams]);
 
-  const filters = useMemo(() => ({
-    genreId,
-    sortBy,
-    year,
-    language: language || undefined,
-    ratingGte: ratingGte || undefined,
-    withCast: selectedActor?.id || undefined,
-    withCrew: selectedDirector?.id || undefined,
-  }), [genreId, sortBy, year, language, ratingGte, selectedActor?.id, selectedDirector?.id]);
+  const filters = useMemo(
+    () => ({
+      genreId,
+      sortBy,
+      year,
+      language: language || undefined,
+      ratingGte: ratingGte || undefined,
+      withCast: selectedActor?.id || undefined,
+      withCrew: selectedDirector?.id || undefined,
+    }),
+    [genreId, sortBy, year, language, ratingGte, selectedActor?.id, selectedDirector?.id]
+  );
 
   const { data: genres } = useQuery({
     queryKey: queryKeys.genres,
@@ -279,25 +295,19 @@ export default function Browse() {
     staleTime: Infinity,
   });
 
-  const {
-    data,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    isLoading,
-    isError,
-  } = useInfiniteQuery({
-    queryKey: queryKeys.browse.infinite(filters),
-    queryFn: ({ pageParam = 1 }) => discoverMovies(filters, pageParam),
-    initialPageParam: 1,
-    getNextPageParam: (lastPage, allPages) => {
-      const next = allPages.length + 1;
-      return next <= lastPage.totalPages ? next : undefined;
-    },
-  });
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, isError } =
+    useInfiniteQuery({
+      queryKey: queryKeys.browse.infinite(filters),
+      queryFn: ({ pageParam = 1 }) => discoverMovies(filters, pageParam),
+      initialPageParam: 1,
+      getNextPageParam: (lastPage, allPages) => {
+        const next = allPages.length + 1;
+        return next <= lastPage.totalPages ? next : undefined;
+      },
+    });
 
   const movies = data?.pages.flatMap((p) => p.results) ?? [];
-  const total  = data?.pages[0]?.total ?? 0;
+  const total = data?.pages[0]?.total ?? 0;
 
   const loadMoreRef = useIntersectionObserver(
     useCallback(() => {
@@ -306,10 +316,10 @@ export default function Browse() {
   );
 
   const activeSortOption = SORT_OPTIONS.find((o) => o.value === sortBy);
-  const activeGenreName  = genres && genreId ? genres[genreId] : null;
+  const activeGenreName = genres && genreId ? genres[genreId] : null;
   const activeFilterCount = [
     genreId,
-    sortBy !== "popularity.desc" ? sortBy : null,
+    sortBy !== 'popularity.desc' ? sortBy : null,
     year,
     language,
     ratingGte,
@@ -348,7 +358,7 @@ export default function Browse() {
         <motion.div
           initial={{ opacity: 0, scale: 0.97 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.15, duration: 0.4, ease: "easeOut" }}
+          transition={{ delay: 0.15, duration: 0.4, ease: 'easeOut' }}
           className="glass rounded-2xl p-4 sm:p-5 mb-6 space-y-4"
         >
           {/* Genre chips */}
@@ -360,11 +370,11 @@ export default function Browse() {
               </p>
               <div className="flex flex-wrap gap-1.5 sm:gap-2">
                 <button
-                  onClick={() => setFilter("genre", null)}
+                  onClick={() => setFilter('genre', null)}
                   className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
                     !genreId
-                      ? "bg-primary text-primary-foreground border-primary shadow-sm shadow-primary/25"
-                      : "bg-transparent text-muted-foreground border-border hover:text-foreground hover:border-foreground/30"
+                      ? 'bg-primary text-primary-foreground border-primary shadow-sm shadow-primary/25'
+                      : 'bg-transparent text-muted-foreground border-border hover:text-foreground hover:border-foreground/30'
                   }`}
                 >
                   All
@@ -372,13 +382,11 @@ export default function Browse() {
                 {Object.entries(genres).map(([id, name]) => (
                   <button
                     key={id}
-                    onClick={() =>
-                      setFilter("genre", genreId === Number(id) ? null : id)
-                    }
+                    onClick={() => setFilter('genre', genreId === Number(id) ? null : id)}
                     className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
                       genreId === Number(id)
-                        ? "bg-primary text-primary-foreground border-primary shadow-sm shadow-primary/25"
-                        : "bg-transparent text-muted-foreground border-border hover:text-foreground hover:border-foreground/30"
+                        ? 'bg-primary text-primary-foreground border-primary shadow-sm shadow-primary/25'
+                        : 'bg-transparent text-muted-foreground border-border hover:text-foreground hover:border-foreground/30'
                     }`}
                   >
                     {name}
@@ -400,11 +408,11 @@ export default function Browse() {
                 return (
                   <button
                     key={opt.value}
-                    onClick={() => setFilter("sort", opt.value)}
+                    onClick={() => setFilter('sort', opt.value)}
                     className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
                       sortBy === opt.value
-                        ? "bg-primary text-primary-foreground border-primary shadow-sm shadow-primary/25"
-                        : "bg-transparent text-muted-foreground border-border hover:text-foreground hover:border-foreground/30"
+                        ? 'bg-primary text-primary-foreground border-primary shadow-sm shadow-primary/25'
+                        : 'bg-transparent text-muted-foreground border-border hover:text-foreground hover:border-foreground/30'
                     }`}
                   >
                     <Icon className="h-3 w-3" />
@@ -423,8 +431,8 @@ export default function Browse() {
                 Year
               </p>
               <Select
-                value={year ? String(year) : "any"}
-                onValueChange={(v) => setFilter("year", v === "any" ? null : v)}
+                value={year ? String(year) : 'any'}
+                onValueChange={(v) => setFilter('year', v === 'any' ? null : v)}
               >
                 <SelectTrigger className="h-9 w-32 text-xs">
                   <SelectValue placeholder="Any Year" />
@@ -448,7 +456,9 @@ export default function Browse() {
             >
               <SlidersHorizontal className="h-3.5 w-3.5" />
               Advanced
-              <ChevronDown className={`h-3 w-3 transition-transform ${advancedOpen ? "rotate-180" : ""}`} />
+              <ChevronDown
+                className={`h-3 w-3 transition-transform ${advancedOpen ? 'rotate-180' : ''}`}
+              />
             </Button>
           </div>
 
@@ -460,7 +470,7 @@ export default function Browse() {
                 animate={{ opacity: 1, scaleY: 1 }}
                 exit={{ opacity: 0, scaleY: 0 }}
                 transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-                style={{ transformOrigin: "top", overflow: "visible" }}
+                style={{ transformOrigin: 'top', overflow: 'visible' }}
               >
                 <div className="border-t border-border/50 pt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                   {/* Language */}
@@ -470,8 +480,8 @@ export default function Browse() {
                       Language
                     </p>
                     <Select
-                      value={language || "any"}
-                      onValueChange={(v) => setFilter("lang", v === "any" ? "" : v)}
+                      value={language || 'any'}
+                      onValueChange={(v) => setFilter('lang', v === 'any' ? '' : v)}
                     >
                       <SelectTrigger className="h-9 text-xs">
                         <SelectValue placeholder="Any Language" />
@@ -494,8 +504,8 @@ export default function Browse() {
                       Min Rating
                     </p>
                     <Select
-                      value={ratingGte || "any"}
-                      onValueChange={(v) => setFilter("rating", v === "any" ? "" : v)}
+                      value={ratingGte || 'any'}
+                      onValueChange={(v) => setFilter('rating', v === 'any' ? '' : v)}
                     >
                       <SelectTrigger className="h-9 text-xs">
                         <SelectValue placeholder="Any Rating" />
@@ -557,7 +567,7 @@ export default function Browse() {
             <Badge variant="secondary" className="gap-1 text-xs">
               {activeGenreName}
               <button
-                onClick={() => setFilter("genre", null)}
+                onClick={() => setFilter('genre', null)}
                 className="ml-1 opacity-60 hover:opacity-100"
                 aria-label="Clear genre filter"
               >
@@ -575,7 +585,7 @@ export default function Browse() {
             <Badge variant="secondary" className="gap-1 text-xs">
               {year}
               <button
-                onClick={() => setFilter("year", null)}
+                onClick={() => setFilter('year', null)}
                 className="ml-1 opacity-60 hover:opacity-100"
                 aria-label="Clear year filter"
               >
@@ -587,7 +597,7 @@ export default function Browse() {
             <Badge variant="secondary" className="gap-1 text-xs">
               {LANGUAGE_OPTIONS.find((l) => l.value === language)?.label || language}
               <button
-                onClick={() => setFilter("lang", "")}
+                onClick={() => setFilter('lang', '')}
                 className="ml-1 opacity-60 hover:opacity-100"
                 aria-label="Clear language filter"
               >
@@ -599,7 +609,7 @@ export default function Browse() {
             <Badge variant="secondary" className="gap-1 text-xs">
               {ratingGte}+ Rating
               <button
-                onClick={() => setFilter("rating", "")}
+                onClick={() => setFilter('rating', '')}
                 className="ml-1 opacity-60 hover:opacity-100"
                 aria-label="Clear rating filter"
               >
@@ -641,7 +651,7 @@ export default function Browse() {
           )}
           {total > 0 && (
             <span className="text-xs text-muted-foreground ml-auto">
-              {total.toLocaleString()} movie{total !== 1 ? "s" : ""}
+              {total.toLocaleString()} movie{total !== 1 ? 's' : ''}
             </span>
           )}
         </motion.div>

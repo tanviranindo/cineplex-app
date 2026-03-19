@@ -18,4 +18,4 @@ export const queryKeys = {
   people: {
     search: (query) => ['people', 'search', query],
   },
-}
+};

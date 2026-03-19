@@ -1,38 +1,48 @@
-import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
-import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
-import { useQuery } from "@tanstack/react-query";
-import { Play, UserPlus, TrendingUp, ChevronRight, Search, Star, BookmarkCheck, Clock } from "lucide-react";
-import { Button } from "../components/ui/button";
-import { Badge } from "../components/ui/badge";
-import MovieCard from "../components/MovieCard";
-import MovieCardSkeleton from "../components/MovieCardSkeleton";
-import { useAuthStore } from "../stores/authStore";
-import { usePreferencesStore } from "../stores/preferencesStore";
-import { usePageTitle } from "../hooks/usePageTitle";
-import { getTrendingMovies, backdropUrl, posterUrl } from "../services/tmdb";
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { useQuery } from '@tanstack/react-query';
+import {
+  Play,
+  UserPlus,
+  TrendingUp,
+  ChevronRight,
+  Search,
+  Star,
+  BookmarkCheck,
+  Clock,
+} from 'lucide-react';
+import { Button } from '../components/ui/button';
+import { Badge } from '../components/ui/badge';
+import MovieCard from '../components/MovieCard';
+import MovieCardSkeleton from '../components/MovieCardSkeleton';
+import { useAuthStore } from '../stores/authStore';
+import { usePreferencesStore } from '../stores/preferencesStore';
+import { usePageTitle } from '../hooks/usePageTitle';
+import { getTrendingMovies, backdropUrl, posterUrl } from '../services/tmdb';
 
 const features = [
   {
     icon: Search,
-    title: "Smart Search",
-    description: "Browse millions of movies from the TMDB database with instant, real-time search.",
-    gradient: "from-violet-500 to-purple-600",
-    glow: "shadow-violet-500/20",
+    title: 'Smart Search',
+    description: 'Browse millions of movies from the TMDB database with instant, real-time search.',
+    gradient: 'from-violet-500 to-purple-600',
+    glow: 'shadow-violet-500/20',
   },
   {
     icon: Star,
-    title: "Ratings & Reviews",
-    description: "See TMDB community ratings, vote counts, and detailed movie statistics.",
-    gradient: "from-amber-500 to-orange-600",
-    glow: "shadow-amber-500/20",
+    title: 'Ratings & Reviews',
+    description: 'See TMDB community ratings, vote counts, and detailed movie statistics.',
+    gradient: 'from-amber-500 to-orange-600',
+    glow: 'shadow-amber-500/20',
   },
   {
     icon: BookmarkCheck,
-    title: "Personal Watchlist",
-    description: "Save your favorites, track watched films, and build the perfect watchlist for any mood.",
-    gradient: "from-cyan-500 to-blue-600",
-    glow: "shadow-cyan-500/20",
+    title: 'Personal Watchlist',
+    description:
+      'Save your favorites, track watched films, and build the perfect watchlist for any mood.',
+    gradient: 'from-cyan-500 to-blue-600',
+    glow: 'shadow-cyan-500/20',
   },
 ];
 
@@ -43,11 +53,12 @@ function PosterStrip({ movies, reverse = false }) {
     <div
       className="relative overflow-hidden"
       style={{
-        maskImage: "linear-gradient(to right, transparent, black 10%, black 90%, transparent)",
-        WebkitMaskImage: "linear-gradient(to right, transparent, black 10%, black 90%, transparent)",
+        maskImage: 'linear-gradient(to right, transparent, black 10%, black 90%, transparent)',
+        WebkitMaskImage:
+          'linear-gradient(to right, transparent, black 10%, black 90%, transparent)',
       }}
     >
-      <div className={`flex gap-3 ${reverse ? "animate-marquee-reverse" : "animate-marquee"}`}>
+      <div className={`flex gap-3 ${reverse ? 'animate-marquee-reverse' : 'animate-marquee'}`}>
         {doubled.map((movie, i) => (
           <Link
             key={`${movie.id}-${i}`}
@@ -76,12 +87,12 @@ function PosterStrip({ movies, reverse = false }) {
 export default function Home() {
   const user = useAuthStore((s) => s.user);
   const recentlyViewed = usePreferencesStore((s) => s.recentlyViewed);
-  usePageTitle("Home");
+  usePageTitle('Home');
   const reducedMotion = useReducedMotion();
   const [heroIndex, setHeroIndex] = useState(0);
 
   const { data: trending } = useQuery({
-    queryKey: ["trending"],
+    queryKey: ['trending'],
     queryFn: getTrendingMovies,
     staleTime: 1000 * 60 * 30,
   });
@@ -104,7 +115,7 @@ export default function Home() {
 
   const item = {
     hidden: { opacity: 0, y: reducedMotion ? 0 : 24 },
-    show: { opacity: 1, y: 0, transition: { duration: reducedMotion ? 0 : 0.5, ease: "easeOut" } },
+    show: { opacity: 1, y: 0, transition: { duration: reducedMotion ? 0 : 0.5, ease: 'easeOut' } },
   };
 
   return (
@@ -138,20 +149,20 @@ export default function Home() {
 
         {/* Content */}
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 w-full">
-          <motion.div
-            variants={container}
-            initial="hidden"
-            animate="show"
-            className="max-w-2xl"
-          >
+          <motion.div variants={container} initial="hidden" animate="show" className="max-w-2xl">
             {/* Trending pill */}
             <motion.div variants={item} className="mb-6">
               <div className="inline-flex items-center gap-2 glass rounded-full px-4 py-2 text-sm text-muted-foreground">
                 <TrendingUp className="h-4 w-4 text-primary" />
                 <span>
-                  {heroMovie
-                    ? <>Trending now &middot; <span className="text-foreground font-medium">{heroMovie.title}</span></>
-                    : "Discover movies"}
+                  {heroMovie ? (
+                    <>
+                      Trending now &middot;{' '}
+                      <span className="text-foreground font-medium">{heroMovie.title}</span>
+                    </>
+                  ) : (
+                    'Discover movies'
+                  )}
                 </span>
               </div>
             </motion.div>
@@ -160,22 +171,18 @@ export default function Home() {
               variants={item}
               className="text-3xl sm:text-5xl lg:text-7xl font-extrabold tracking-tight leading-tight"
             >
-              Your Personal{" "}
-              <span className="gradient-text">Movie Watchlist</span>
+              Your Personal <span className="gradient-text">Movie Watchlist</span>
             </motion.h1>
 
             <motion.p
               variants={item}
               className="mt-6 text-lg sm:text-xl text-muted-foreground/90 max-w-xl leading-relaxed"
             >
-              Search millions of movies, view ratings and details, and build
-              the perfect watchlist — all in one place.
+              Search millions of movies, view ratings and details, and build the perfect watchlist —
+              all in one place.
             </motion.p>
 
-            <motion.div
-              variants={item}
-              className="mt-10 flex flex-col sm:flex-row gap-4"
-            >
+            <motion.div variants={item} className="mt-10 flex flex-col sm:flex-row gap-4">
               <Button
                 size="lg"
                 className="rounded-full shadow-lg shadow-primary/25 text-base px-8"
@@ -212,8 +219,8 @@ export default function Home() {
                   aria-label={`Show backdrop ${i + 1}`}
                   className={`h-1.5 rounded-full transition-all duration-300 ${
                     i === heroIndex
-                      ? "w-6 bg-foreground"
-                      : "w-1.5 bg-foreground/30 hover:bg-foreground/60"
+                      ? 'w-6 bg-foreground'
+                      : 'w-1.5 bg-foreground/30 hover:bg-foreground/60'
                   }`}
                 />
               ))}
@@ -247,7 +254,7 @@ export default function Home() {
               variants={container}
               initial="hidden"
               whileInView="show"
-              viewport={{ once: true, margin: "-50px" }}
+              viewport={{ once: true, margin: '-50px' }}
               className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6"
             >
               {recentlyViewed.slice(0, 10).map((movie, i) => (
@@ -289,7 +296,7 @@ export default function Home() {
               variants={container}
               initial="hidden"
               whileInView="show"
-              viewport={{ once: true, margin: "-50px" }}
+              viewport={{ once: true, margin: '-50px' }}
               className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6"
             >
               {trending.slice(0, 10).map((movie, i) => (
@@ -314,13 +321,11 @@ export default function Home() {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.5, ease: "easeOut" }}
+            viewport={{ once: true, margin: '-100px' }}
+            transition={{ duration: 0.5, ease: 'easeOut' }}
             className="text-center mb-12"
           >
-            <h2 className="text-3xl font-extrabold tracking-tight">
-              Everything you need
-            </h2>
+            <h2 className="text-3xl font-extrabold tracking-tight">Everything you need</h2>
             <p className="text-muted-foreground mt-3 max-w-lg mx-auto">
               Powered by TMDB for the most up-to-date movie data in the world.
             </p>
@@ -330,7 +335,7 @@ export default function Home() {
             variants={container}
             initial="hidden"
             whileInView="show"
-            viewport={{ once: true, margin: "-100px" }}
+            viewport={{ once: true, margin: '-100px' }}
             className="grid grid-cols-1 md:grid-cols-3 gap-6"
           >
             {features.map((feature) => (
@@ -342,9 +347,7 @@ export default function Home() {
                     <feature.icon className="h-6 w-6 text-white" />
                   </div>
                   <h3 className="text-xl font-semibold mb-3">{feature.title}</h3>
-                  <p className="text-muted-foreground leading-relaxed">
-                    {feature.description}
-                  </p>
+                  <p className="text-muted-foreground leading-relaxed">{feature.description}</p>
                 </div>
               </motion.div>
             ))}

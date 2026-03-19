@@ -1,6 +1,6 @@
-import { useState } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Film,
   Search,
@@ -13,9 +13,9 @@ import {
   X,
   Settings,
   Check,
-} from "lucide-react";
-import { toast } from "sonner";
-import { Button } from "./ui/button";
+} from 'lucide-react';
+import { toast } from 'sonner';
+import { Button } from './ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,9 +25,9 @@ import {
   DropdownMenuSub,
   DropdownMenuSubTrigger,
   DropdownMenuSubContent,
-} from "./ui/dropdown-menu";
-import { useAuthStore } from "../stores/authStore";
-import { useThemeStore } from "../stores/themeStore";
+} from './ui/dropdown-menu';
+import { useAuthStore } from '../stores/authStore';
+import { useThemeStore } from '../stores/themeStore';
 
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -37,30 +37,28 @@ export default function Navbar() {
   const toggle = useThemeStore((s) => s.toggle);
   const navigate = useNavigate();
   const location = useLocation();
-  const isLoginPage = location.pathname.startsWith("/auth/");
+  const isLoginPage = location.pathname.startsWith('/auth/');
 
   const initials = user?.name
     ? user.name
-        .split(" ")
+        .split(' ')
         .map((n) => n[0])
-        .join("")
+        .join('')
         .toUpperCase()
         .slice(0, 2)
-    : "";
+    : '';
 
   const handleLogout = () => {
     logout();
-    toast.success("Signed out successfully");
+    toast.success('Signed out successfully');
     setMobileOpen(false);
-    navigate("/");
+    navigate('/');
   };
 
   const navLinks = [
-    { to: "/search",    label: "Search",    icon: Search },
-    { to: "/browse",    label: "Browse",    icon: Compass },
-    ...(user
-      ? [{ to: "/watchlist", label: "Watchlist", icon: BookmarkCheck }]
-      : []),
+    { to: '/search', label: 'Search', icon: Search },
+    { to: '/browse', label: 'Browse', icon: Compass },
+    ...(user ? [{ to: '/watchlist', label: 'Watchlist', icon: BookmarkCheck }] : []),
   ];
 
   return (
@@ -100,11 +98,11 @@ export default function Navbar() {
             >
               <motion.div
                 className="absolute w-5 h-5 rounded-full bg-background shadow-sm flex items-center justify-center"
-                style={{ willChange: "transform" }}
-                animate={{ x: theme === "dark" ? 30 : 4 }}
-                transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                style={{ willChange: 'transform' }}
+                animate={{ x: theme === 'dark' ? 30 : 4 }}
+                transition={{ type: 'spring', stiffness: 500, damping: 30 }}
               >
-                {theme === "dark" ? (
+                {theme === 'dark' ? (
                   <Moon className="h-3 w-3 text-primary" />
                 ) : (
                   <Sun className="h-3 w-3 text-amber-500" />
@@ -119,7 +117,7 @@ export default function Navbar() {
                     {user.photoURL ? (
                       <img
                         src={user.photoURL}
-                        alt={user.name ?? ""}
+                        alt={user.name ?? ''}
                         className="w-8 h-8 rounded-full object-cover ring-2 ring-transparent group-hover:ring-primary/50 transition-all"
                       />
                     ) : (
@@ -131,7 +129,7 @@ export default function Navbar() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
                   <div className="px-3 py-2">
-                    <p className="text-sm font-medium truncate">{user.name ?? "No name set"}</p>
+                    <p className="text-sm font-medium truncate">{user.name ?? 'No name set'}</p>
                     <p className="text-xs text-muted-foreground truncate">{user.email}</p>
                   </div>
                   <DropdownMenuSeparator />
@@ -143,7 +141,7 @@ export default function Navbar() {
                   </DropdownMenuItem>
                   <DropdownMenuSub>
                     <DropdownMenuSubTrigger className="flex items-center gap-2">
-                      {theme === "dark" ? (
+                      {theme === 'dark' ? (
                         <Moon className="h-4 w-4" />
                       ) : (
                         <Sun className="h-4 w-4" />
@@ -152,22 +150,26 @@ export default function Navbar() {
                     </DropdownMenuSubTrigger>
                     <DropdownMenuSubContent>
                       <DropdownMenuItem
-                        onClick={() => { if (theme !== "light") toggle(); }}
+                        onClick={() => {
+                          if (theme !== 'light') toggle();
+                        }}
                         className="flex items-center justify-between"
                       >
                         <span className="flex items-center gap-2">
                           <Sun className="h-4 w-4" /> Light
                         </span>
-                        {theme === "light" && <Check className="h-3.5 w-3.5 text-primary" />}
+                        {theme === 'light' && <Check className="h-3.5 w-3.5 text-primary" />}
                       </DropdownMenuItem>
                       <DropdownMenuItem
-                        onClick={() => { if (theme !== "dark") toggle(); }}
+                        onClick={() => {
+                          if (theme !== 'dark') toggle();
+                        }}
                         className="flex items-center justify-between"
                       >
                         <span className="flex items-center gap-2">
                           <Moon className="h-4 w-4" /> Dark
                         </span>
-                        {theme === "dark" && <Check className="h-3.5 w-3.5 text-primary" />}
+                        {theme === 'dark' && <Check className="h-3.5 w-3.5 text-primary" />}
                       </DropdownMenuItem>
                     </DropdownMenuSubContent>
                   </DropdownMenuSub>
@@ -194,13 +196,9 @@ export default function Navbar() {
           <button
             className="md:hidden p-2 text-muted-foreground hover:text-foreground transition-colors"
             onClick={() => setMobileOpen(!mobileOpen)}
-            aria-label={mobileOpen ? "Close menu" : "Open menu"}
+            aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
           >
-            {mobileOpen ? (
-              <X className="h-5 w-5" />
-            ) : (
-              <Menu className="h-5 w-5" />
-            )}
+            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
         </div>
       </div>
@@ -210,7 +208,7 @@ export default function Navbar() {
         {mobileOpen && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
+            animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
             className="md:hidden overflow-hidden glass border-t border-border/50"
@@ -224,8 +222,8 @@ export default function Navbar() {
                   onClick={() => setMobileOpen(false)}
                   className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                     location.pathname === link.to
-                      ? "bg-accent text-foreground"
-                      : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                      ? 'bg-accent text-foreground'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-accent'
                   }`}
                 >
                   <link.icon className="h-4 w-4" />
@@ -236,21 +234,23 @@ export default function Navbar() {
               {/* Mobile theme toggle */}
               <div className="flex items-center gap-2 px-3 py-2 pt-3">
                 <button
-                  onClick={() => { if (theme !== "light") toggle(); setMobileOpen(false); }}
+                  onClick={() => {
+                    if (theme !== 'light') toggle();
+                    setMobileOpen(false);
+                  }}
                   className={`flex items-center gap-2 text-sm px-2 py-1 rounded-lg ${
-                    theme === "light"
-                      ? "bg-accent text-foreground"
-                      : "text-muted-foreground"
+                    theme === 'light' ? 'bg-accent text-foreground' : 'text-muted-foreground'
                   }`}
                 >
                   <Sun className="h-4 w-4" /> Light
                 </button>
                 <button
-                  onClick={() => { if (theme !== "dark") toggle(); setMobileOpen(false); }}
+                  onClick={() => {
+                    if (theme !== 'dark') toggle();
+                    setMobileOpen(false);
+                  }}
                   className={`flex items-center gap-2 text-sm px-2 py-1 rounded-lg ${
-                    theme === "dark"
-                      ? "bg-accent text-foreground"
-                      : "text-muted-foreground"
+                    theme === 'dark' ? 'bg-accent text-foreground' : 'text-muted-foreground'
                   }`}
                 >
                   <Moon className="h-4 w-4" /> Dark
@@ -264,7 +264,7 @@ export default function Navbar() {
                       {user.photoURL ? (
                         <img
                           src={user.photoURL}
-                          alt={user.name ?? ""}
+                          alt={user.name ?? ''}
                           className="w-8 h-8 rounded-full object-cover"
                         />
                       ) : (
@@ -272,7 +272,9 @@ export default function Navbar() {
                           <span className="text-[11px] font-bold text-white">{initials}</span>
                         </div>
                       )}
-                      <p className="text-sm text-muted-foreground truncate max-w-[200px]">{user.name}</p>
+                      <p className="text-sm text-muted-foreground truncate max-w-[200px]">
+                        {user.name}
+                      </p>
                     </div>
                     <Link
                       to="/account"
@@ -292,11 +294,7 @@ export default function Navbar() {
                   </div>
                 ) : (
                   !isLoginPage && (
-                    <Link
-                      to="/auth/signin"
-                      onClick={() => setMobileOpen(false)}
-                      className="block"
-                    >
+                    <Link to="/auth/signin" onClick={() => setMobileOpen(false)} className="block">
                       <Button className="w-full" size="sm">
                         Sign In
                       </Button>

@@ -1,10 +1,10 @@
-import { useState, useCallback } from "react";
-import { Link } from "react-router-dom";
-import { motion, useReducedMotion } from "framer-motion";
-import { Star, Plus, Check, Trash2, Eye, Bookmark, CheckCircle, Heart, Film } from "lucide-react";
-import { toast } from "sonner";
-import { Button } from "./ui/button";
-import { Badge } from "./ui/badge";
+import { useState, useCallback } from 'react';
+import { Link } from 'react-router-dom';
+import { motion, useReducedMotion } from 'framer-motion';
+import { Star, Plus, Check, Trash2, Eye, Bookmark, CheckCircle, Heart, Film } from 'lucide-react';
+import { toast } from 'sonner';
+import { Button } from './ui/button';
+import { Badge } from './ui/badge';
 import {
   Dialog,
   DialogContent,
@@ -12,19 +12,19 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from "./ui/dialog";
+} from './ui/dialog';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "./ui/dropdown-menu";
-import { useAuthStore } from "../stores/authStore";
-import { useWatchlistStore } from "../stores/watchlistStore";
-import { useLoginModalStore } from "../stores/loginModalStore";
-import { posterUrl, getMovieById } from "../services/tmdb";
-import { queryClient } from "../lib/queryClient";
-import { queryKeys } from "../lib/queryKeys";
+} from './ui/dropdown-menu';
+import { useAuthStore } from '../stores/authStore';
+import { useWatchlistStore } from '../stores/watchlistStore';
+import { useLoginModalStore } from '../stores/loginModalStore';
+import { posterUrl, getMovieById } from '../services/tmdb';
+import { queryClient } from '../lib/queryClient';
+import { queryKeys } from '../lib/queryKeys';
 
 export default function MovieCard({ movie, index = 0, showRemove = false, addedAt }) {
   const [removeOpen, setRemoveOpen] = useState(false);
@@ -35,19 +35,22 @@ export default function MovieCard({ movie, index = 0, showRemove = false, addedA
   const remove = useWatchlistStore((s) => s.remove);
   const isInList = useWatchlistStore((s) => s.isInList(movie.id));
   const setStatus = useWatchlistStore((s) => s.setStatus);
-  const currentStatus = useWatchlistStore((s) => s.items.find((m) => m.id === movie.id)?.status ?? null);
+  const currentStatus = useWatchlistStore(
+    (s) => s.items.find((m) => m.id === movie.id)?.status ?? null
+  );
 
   const hasPoster = !!movie.poster_path;
-  const title = movie.title || movie.Title || "Untitled";
-  const year = (movie.release_date || movie.Year || "").slice(0, 4);
-  const hasReliableRating = movie.vote_average > 0 && (movie.vote_count == null || movie.vote_count >= 10);
+  const title = movie.title || movie.Title || 'Untitled';
+  const year = (movie.release_date || movie.Year || '').slice(0, 4);
+  const hasReliableRating =
+    movie.vote_average > 0 && (movie.vote_count == null || movie.vote_count >= 10);
   const rating = hasReliableRating ? movie.vote_average.toFixed(1) : null;
   const movieId = movie.id;
 
   const STATUS_OPTIONS = [
-    { value: "to_watch", label: "To Watch", icon: Bookmark },
-    { value: "watched", label: "Watched", icon: CheckCircle },
-    { value: "favorite", label: "Favorite", icon: Heart },
+    { value: 'to_watch', label: 'To Watch', icon: Bookmark },
+    { value: 'watched', label: 'Watched', icon: CheckCircle },
+    { value: 'favorite', label: 'Favorite', icon: Heart },
   ];
 
   const StatusIcon = ({ status }) => {
@@ -69,8 +72,8 @@ export default function MovieCard({ movie, index = 0, showRemove = false, addedA
       queryKey: queryKeys.movies.detail(movieId),
       queryFn: () => getMovieById(movieId),
       staleTime: 1000 * 60 * 5,
-    })
-  }, [movieId])
+    });
+  }, [movieId]);
 
   const handleAdd = async (e) => {
     e.preventDefault();
@@ -83,7 +86,7 @@ export default function MovieCard({ movie, index = 0, showRemove = false, addedA
       await add(watchlistItem, user.id);
       toast.success(`"${title}" added to watchlist`);
     } catch {
-      toast.error("Failed to update watchlist");
+      toast.error('Failed to update watchlist');
     }
   };
 
@@ -94,7 +97,7 @@ export default function MovieCard({ movie, index = 0, showRemove = false, addedA
       toast.success(`"${title}" removed from watchlist`);
       setRemoveOpen(false);
     } catch {
-      toast.error("Failed to remove from watchlist");
+      toast.error('Failed to remove from watchlist');
     }
   };
 
@@ -103,7 +106,7 @@ export default function MovieCard({ movie, index = 0, showRemove = false, addedA
       <motion.div
         initial={{ opacity: 0, y: reducedMotion ? 0 : 20 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-50px" }}
+        viewport={{ once: true, margin: '-50px' }}
         transition={{ duration: reducedMotion ? 0 : 0.4 }}
       >
         <Link to={`/movie/${movieId}`} className="block group" onMouseEnter={handleMouseEnter}>
@@ -115,12 +118,19 @@ export default function MovieCard({ movie, index = 0, showRemove = false, addedA
                   alt={title}
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   loading="lazy"
-                  onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.nextSibling?.classList.remove('hidden') }}
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                    e.currentTarget.nextSibling?.classList.remove('hidden');
+                  }}
                 />
               ) : null}
-              <div className={`${hasPoster ? 'hidden' : ''} absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-muted to-muted/50 gap-3`}>
+              <div
+                className={`${hasPoster ? 'hidden' : ''} absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-muted to-muted/50 gap-3`}
+              >
                 <Film className="h-10 w-10 text-muted-foreground/40" />
-                <p className="text-xs text-muted-foreground/60 text-center px-3 leading-tight">{title}</p>
+                <p className="text-xs text-muted-foreground/60 text-center px-3 leading-tight">
+                  {title}
+                </p>
               </div>
 
               {/* Subtle always-present bottom gradient for readability */}
@@ -154,14 +164,14 @@ export default function MovieCard({ movie, index = 0, showRemove = false, addedA
 
               {addedAt && (
                 <p className="text-[10px] text-muted-foreground/60">
-                  Added {new Intl.DateTimeFormat("en-US", { month: "short", year: "numeric" }).format(addedAt?.toDate?.() ?? new Date(addedAt))}
+                  Added{' '}
+                  {new Intl.DateTimeFormat('en-US', { month: 'short', year: 'numeric' }).format(
+                    addedAt?.toDate?.() ?? new Date(addedAt)
+                  )}
                 </p>
               )}
 
-              <div
-                className="flex gap-2"
-                onClick={(e) => e.preventDefault()}
-              >
+              <div className="flex gap-2" onClick={(e) => e.preventDefault()}>
                 {showRemove ? (
                   <div className="flex gap-1.5 w-full">
                     {/* Status dropdown */}
@@ -190,11 +200,11 @@ export default function MovieCard({ movie, index = 0, showRemove = false, addedA
                                 try {
                                   await setStatus(movieId, user.id, opt.value);
                                 } catch {
-                                  toast.error("Failed to update watchlist");
+                                  toast.error('Failed to update watchlist');
                                 }
                               }
                             }}
-                            className={currentStatus === opt.value ? "bg-accent" : ""}
+                            className={currentStatus === opt.value ? 'bg-accent' : ''}
                           >
                             <opt.icon className="h-4 w-4 mr-2" />
                             {opt.label}
@@ -222,12 +232,7 @@ export default function MovieCard({ movie, index = 0, showRemove = false, addedA
                     </Button>
                   </div>
                 ) : isInList ? (
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    className="w-full text-xs"
-                    disabled
-                  >
+                  <Button variant="secondary" size="sm" className="w-full text-xs" disabled>
                     <Check className="h-3.5 w-3.5 mr-1" />
                     Added
                   </Button>
@@ -253,8 +258,8 @@ export default function MovieCard({ movie, index = 0, showRemove = false, addedA
           <DialogHeader>
             <DialogTitle>Remove from Watchlist</DialogTitle>
             <DialogDescription>
-              Are you sure you want to remove "{title}" from your
-              watchlist? This action cannot be undone.
+              Are you sure you want to remove "{title}" from your watchlist? This action cannot be
+              undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

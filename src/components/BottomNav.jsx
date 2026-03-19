@@ -1,6 +1,6 @@
-import { NavLink } from 'react-router-dom'
-import { Home, Search, Compass, BookmarkCheck, User } from 'lucide-react'
-import { useAuthStore } from '../stores/authStore'
+import { NavLink } from 'react-router-dom';
+import { Home, Search, Compass, BookmarkCheck, User } from 'lucide-react';
+import { useAuthStore } from '../stores/authStore';
 
 const ALL_ITEMS = [
   { to: '/', icon: Home, label: 'Home', requiresAuth: false },
@@ -8,11 +8,11 @@ const ALL_ITEMS = [
   { to: '/browse', icon: Compass, label: 'Browse', requiresAuth: false },
   { to: '/watchlist', icon: BookmarkCheck, label: 'Watchlist', requiresAuth: true },
   { to: '/account', icon: User, label: 'Account', requiresAuth: true },
-]
+];
 
 export default function BottomNav() {
-  const user = useAuthStore((s) => s.user)
-  const items = ALL_ITEMS.filter((item) => !item.requiresAuth || user)
+  const user = useAuthStore((s) => s.user);
+  const items = ALL_ITEMS.filter((item) => !item.requiresAuth || user);
 
   return (
     <nav className="fixed bottom-0 inset-x-0 z-50 md:hidden glass border-t border-border/50">
@@ -34,5 +34,5 @@ export default function BottomNav() {
         ))}
       </div>
     </nav>
-  )
+  );
 }
