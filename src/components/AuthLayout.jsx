@@ -74,7 +74,7 @@ export default function AuthLayout({ children, posterSide = "left" }) {
       initial={{ opacity: 0, x: isLeft ? -80 : 80 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-      className="flex-1 flex items-center justify-center py-12 px-4 relative"
+      className="flex-1 flex items-center justify-center py-12 px-4 relative overflow-x-hidden"
     >
       <div className="ambient-orb w-96 h-96 bg-violet-500/15 -top-20 -right-20 animate-float" />
       <div className="ambient-orb w-72 h-72 bg-cyan-500/10 bottom-10 -left-20 animate-float-slow" />

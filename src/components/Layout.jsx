@@ -25,10 +25,10 @@ export default function Layout() {
           <AnimatePresence mode="wait">
             <motion.div
               key={location.pathname}
-              initial={{ opacity: 0, y: reducedMotion ? 0 : 8 }}
+              initial={{ opacity: 0, y: reducedMotion ? 0 : 6 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: reducedMotion ? 0 : -8 }}
-              transition={{ duration: reducedMotion ? 0 : 0.2 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: reducedMotion ? 0 : 0.15, ease: "easeOut" }}
             >
               <Outlet />
             </motion.div>

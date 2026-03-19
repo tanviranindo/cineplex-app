@@ -72,7 +72,7 @@ const container = {
   hidden: { opacity: 0 },
   show: {
     opacity: 1,
-    transition: { staggerChildren: 0.03, delayChildren: 0.1 },
+    transition: { staggerChildren: 0.05, delayChildren: 0.05 },
   },
 };
 
@@ -318,7 +318,7 @@ export default function Browse() {
   ].filter(Boolean).length;
 
   return (
-    <div className="relative min-h-[calc(100vh-4rem)]">
+    <div className="relative min-h-[calc(100vh-4rem)] overflow-x-hidden">
       {/* Ambient orbs */}
       <div className="ambient-orb w-96 h-96 bg-violet-500/10 -top-20 -right-40 animate-float" />
       <div className="ambient-orb w-64 h-64 bg-cyan-500/10 bottom-40 -left-32 animate-float-slow" />
@@ -453,14 +453,14 @@ export default function Browse() {
           </div>
 
           {/* Advanced Filters */}
-          <AnimatePresence>
+          <AnimatePresence mode="wait">
             {advancedOpen && (
               <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1, overflow: "visible", transitionEnd: { overflow: "visible" } }}
-                exit={{ height: 0, opacity: 0, overflow: "hidden" }}
-                transition={{ duration: 0.25 }}
-                style={{ overflow: "hidden" }}
+                initial={{ opacity: 0, scaleY: 0 }}
+                animate={{ opacity: 1, scaleY: 1 }}
+                exit={{ opacity: 0, scaleY: 0 }}
+                transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+                style={{ transformOrigin: "top", overflow: "visible" }}
               >
                 <div className="border-t border-border/50 pt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                   {/* Language */}

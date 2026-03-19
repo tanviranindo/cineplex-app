@@ -131,7 +131,7 @@ export default function Watchlist() {
   const handleSortChange = (sort) => { setSortBy(sort); setPage(1); };
 
   return (
-    <div className="relative min-h-[calc(100vh-4rem)]">
+    <div className="relative min-h-[calc(100vh-4rem)] overflow-x-hidden">
       <div className="ambient-orb w-80 h-80 bg-violet-500/10 -top-20 -right-40 animate-float" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">

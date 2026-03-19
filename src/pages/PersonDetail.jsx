@@ -62,6 +62,8 @@ function calculateAge(birthday, deathday) {
 export default function PersonDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [showAllCast, setShowAllCast] = useState(false);
+  const [showAllCrew, setShowAllCrew] = useState(false);
 
   const { data: person, isLoading, isError } = useQuery({
     queryKey: ["person", "detail", id],
@@ -84,9 +86,6 @@ export default function PersonDetail() {
     );
   }
 
-  const [showAllCast, setShowAllCast] = useState(false);
-  const [showAllCrew, setShowAllCrew] = useState(false);
-
   const photo = profileUrl(person.profilePath, "h632") || PLACEHOLDER_PERSON;
   const age = calculateAge(person.birthday, person.deathday);
   const isDirector = person.department === "Directing";
@@ -97,7 +96,7 @@ export default function PersonDetail() {
   const visibleCrew = showAllCrew ? person.crewCredits : person.crewCredits?.slice(0, INITIAL_SHOW);
 
   return (
-    <div className="relative">
+    <div className="relative overflow-x-hidden">
       {/* Ambient orbs */}
       <div className="ambient-orb w-96 h-96 bg-violet-500/10 -top-20 -right-40 animate-float" />
       <div className="ambient-orb w-64 h-64 bg-cyan-500/10 bottom-40 -left-32 animate-float-slow" />

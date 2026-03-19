@@ -100,6 +100,7 @@ export default function Navbar() {
             >
               <motion.div
                 className="absolute w-5 h-5 rounded-full bg-background shadow-sm flex items-center justify-center"
+                style={{ willChange: "transform" }}
                 animate={{ x: theme === "dark" ? 30 : 4 }}
                 transition={{ type: "spring", stiffness: 500, damping: 30 }}
               >
@@ -211,7 +212,7 @@ export default function Navbar() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.2 }}
+            transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
             className="md:hidden overflow-hidden glass border-t border-border/50"
           >
             <div className="px-4 py-4 space-y-1">

@@ -486,12 +486,12 @@ export default function MovieDetail() {
                   <Users className="h-3 w-3" />
                   Cast
                 </h3>
-                <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide sm:flex-wrap sm:overflow-visible sm:pb-0">
+                <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide sm:grid sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 sm:overflow-visible sm:pb-0">
                   {movie.castDetailed.map((c) => (
                     <Link
                       key={c.id}
                       to={`/person/${c.id}`}
-                      className="flex flex-col items-center gap-1.5 shrink-0 w-20 group"
+                      className="flex flex-col items-center gap-2 shrink-0 w-20 sm:w-auto group"
                     >
                       {c.profilePath ? (
                         <img
@@ -507,7 +507,7 @@ export default function MovieDetail() {
                       <span className="text-[11px] font-medium text-center leading-tight line-clamp-2 group-hover:text-primary transition-colors">
                         {c.name}
                       </span>
-                      {c.character && (
+                      {c.character && !/^\d+$/.test(c.character) && (
                         <span className="text-[10px] text-muted-foreground text-center leading-tight line-clamp-1">
                           {c.character}
                         </span>
@@ -546,7 +546,7 @@ export default function MovieDetail() {
           >
             You Might Also Like
           </motion.h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
             {similar.map((m, i) => (
               <MovieCard key={m.id} movie={m} index={i} />
             ))}
