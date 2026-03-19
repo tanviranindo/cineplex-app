@@ -11,7 +11,6 @@ import {
   Plus,
   Play,
   Trash2,
-  Search,
   ExternalLink,
   Bookmark,
   CheckCircle,
@@ -84,6 +83,7 @@ export default function MovieDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [trailerOpen, setTrailerOpen] = useState(false);
+  const [showAllCast, setShowAllCast] = useState(false);
   const user = useAuthStore((s) => s.user);
   const add = useWatchlistStore((s) => s.add);
   const remove = useWatchlistStore((s) => s.remove);
@@ -133,6 +133,8 @@ export default function MovieDetail() {
   const addRecentlyViewed = usePreferencesStore((s) => s.addRecentlyViewed);
   useEffect(() => {
     if (movie) addRecentlyViewed(movie);
+  }, [movie, addRecentlyViewed]);
+    setShowAllCast(false);
   }, [movie?.id]);
 
   const handleAdd = async () => {
@@ -193,6 +195,10 @@ export default function MovieDetail() {
     : null;
   const revenue = movie.revenue ? `$${(movie.revenue / 1_000_000).toFixed(0)}M` : null;
   const budget = movie.budget ? `$${(movie.budget / 1_000_000).toFixed(0)}M` : null;
+  const INITIAL_CAST_COUNT = 10;
+  const visibleCast = showAllCast
+    ? movie.castDetailed || []
+    : (movie.castDetailed || []).slice(0, INITIAL_CAST_COUNT);
 
   const infoCredits = [
     { label: 'Release Date', value: movie.release_date },
@@ -273,7 +279,7 @@ export default function MovieDetail() {
             <div>
               <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">{movie.title}</h1>
               {movie.tagline && (
-                <p className="text-muted-foreground mt-1 italic">"{movie.tagline}"</p>
+                <p className="text-muted-foreground mt-1 italic">&ldquo;{movie.tagline}&rdquo;</p>
               )}
 
               <div className="flex flex-wrap gap-2 mt-4">
@@ -502,29 +508,31 @@ export default function MovieDetail() {
                   <Clapperboard className="h-3 w-3" />
                   Director{movie.directorsDetailed.length > 1 ? 's' : ''}
                 </h3>
-                <div className="flex flex-wrap gap-2">
-                  {movie.directorsDetailed.map((d) => (
-                    <Link
-                      key={d.id}
-                      to={`/person/${d.id}`}
-                      className="flex items-center gap-2 px-3 py-2 rounded-lg border border-border/50 bg-secondary/30 hover:bg-secondary/60 transition-colors group"
-                    >
-                      {d.profilePath ? (
-                        <img
-                          src={profileUrl(d.profilePath)}
-                          alt={d.name}
-                          className="w-7 h-7 rounded-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center">
-                          <Clapperboard className="h-3.5 w-3.5 text-muted-foreground" />
-                        </div>
-                      )}
-                      <span className="text-sm font-medium group-hover:text-primary transition-colors">
-                        {d.name}
-                      </span>
-                    </Link>
-                  ))}
+                <div className="glass rounded-xl border border-border/50 p-4">
+                  <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+                    {movie.directorsDetailed.map((d) => (
+                      <Link
+                        key={d.id}
+                        to={`/person/${d.id}`}
+                        className="group flex min-w-0 w-full flex-col items-center text-center"
+                      >
+                        {d.profilePath ? (
+                          <img
+                            src={profileUrl(d.profilePath)}
+                            alt={d.name}
+                            className="w-14 h-14 rounded-full object-cover ring-2 ring-transparent group-hover:ring-primary/50 transition-all"
+                          />
+                        ) : (
+                          <div className="w-14 h-14 rounded-full bg-muted/80 flex items-center justify-center ring-2 ring-transparent group-hover:ring-primary/50 transition-all">
+                            <Clapperboard className="h-5 w-5 text-muted-foreground/90" />
+                          </div>
+                        )}
+                        <span className="mt-2 min-h-[2.5rem] w-full px-1 text-xs font-semibold leading-tight line-clamp-2 break-words text-foreground transition-colors group-hover:text-primary">
+                          {d.name}
+                        </span>
+                      </Link>
+                    ))}
+                  </div>
                 </div>
               </div>
             )}
@@ -536,36 +544,51 @@ export default function MovieDetail() {
                   <Users className="h-3 w-3" />
                   Cast
                 </h3>
-                <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide sm:grid sm:grid-cols-4 md:grid-cols-5 sm:overflow-visible sm:pb-0">
-                  {movie.castDetailed.map((c) => {
-                    const charName = c.character && !/^\d+$/.test(c.character) ? c.character : null;
-                    return (
-                      <Link
-                        key={c.id}
-                        to={`/person/${c.id}`}
-                        className="flex flex-col items-center shrink-0 w-20 sm:w-auto group"
-                      >
-                        {c.profilePath ? (
-                          <img
-                            src={profileUrl(c.profilePath)}
-                            alt={c.name}
-                            className="w-14 h-14 rounded-full object-cover ring-2 ring-transparent group-hover:ring-primary/50 transition-all"
-                          />
-                        ) : (
-                          <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center ring-2 ring-transparent group-hover:ring-primary/50 transition-all">
-                            <Users className="h-5 w-5 text-muted-foreground" />
-                          </div>
-                        )}
-                        <span className="mt-2 text-[11px] font-medium text-center leading-tight line-clamp-2 min-h-[2rem] group-hover:text-primary transition-colors">
-                          {c.name}
-                        </span>
-                        <span className="text-[10px] text-muted-foreground text-center leading-tight line-clamp-1 min-h-[1rem]">
-                          {charName || '\u00A0'}
-                        </span>
-                      </Link>
-                    );
-                  })}
+                <div className="glass rounded-xl border border-border/50 p-4">
+                  <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+                    {visibleCast.map((c) => {
+                      return (
+                        <Link
+                          key={c.id}
+                          to={`/person/${c.id}`}
+                          className="group flex min-w-0 w-full flex-col items-center text-center"
+                        >
+                          {c.profilePath ? (
+                            <img
+                              src={profileUrl(c.profilePath)}
+                              alt={c.name}
+                              className="w-14 h-14 rounded-full object-cover ring-2 ring-transparent group-hover:ring-primary/50 transition-all"
+                            />
+                          ) : (
+                            <div className="w-14 h-14 rounded-full bg-muted/80 flex items-center justify-center ring-2 ring-transparent group-hover:ring-primary/50 transition-all">
+                              <Users className="h-5 w-5 text-muted-foreground/90" />
+                            </div>
+                          )}
+                          <span
+                            title={c.name}
+                            className="mt-2 w-full px-1 text-xs font-semibold leading-tight line-clamp-2 break-words text-foreground transition-colors group-hover:text-primary"
+                          >
+                            {c.name}
+                          </span>
+                        </Link>
+                      );
+                    })}
+                  </div>
                 </div>
+                {movie.castDetailed.length > INITIAL_CAST_COUNT && (
+                  <div className="mt-3">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="bg-secondary/40 border-border/70 hover:bg-secondary/60"
+                      onClick={() => setShowAllCast((prev) => !prev)}
+                    >
+                      {showAllCast
+                        ? 'Show Less'
+                        : `Show More (${movie.castDetailed.length - INITIAL_CAST_COUNT} more)`}
+                    </Button>
+                  </div>
+                )}
               </div>
             )}
 

@@ -46,7 +46,7 @@ export async function getMovieById(movieId) {
       ?.filter((c) => c.job === 'Director')
       .map((c) => ({ id: c.id, name: c.name, profilePath: c.profile_path })) || [];
   const castDetailed =
-    credits.cast?.slice(0, 10).map((c) => ({
+    credits.cast?.map((c) => ({
       id: c.id,
       name: c.name,
       character: c.character,

@@ -4,16 +4,23 @@ import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import {
   ArrowLeft,
+  ArrowUpDown,
   Users,
   Clapperboard,
   Calendar,
   MapPin,
   Film,
   ExternalLink,
-  Star,
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../components/ui/select';
 import MovieCard from '../components/MovieCard';
 import { getPersonById, profileUrl } from '../services/tmdb';
 import { usePageTitle } from '../hooks/usePageTitle';
@@ -59,11 +66,38 @@ function calculateAge(birthday, deathday) {
   return age;
 }
 
+function movieYear(movie) {
+  return parseInt((movie?.release_date || '').slice(0, 4), 10) || 0;
+}
+
+function sortCredits(credits = [], sortBy = 'popularity_desc') {
+  const sorted = [...credits];
+  switch (sortBy) {
+    case 'year_desc':
+      return sorted.sort(
+        (a, b) => movieYear(b) - movieYear(a) || (b.popularity || 0) - (a.popularity || 0)
+      );
+    case 'year_asc':
+      return sorted.sort(
+        (a, b) => movieYear(a) - movieYear(b) || (b.popularity || 0) - (a.popularity || 0)
+      );
+    case 'title_asc':
+      return sorted.sort((a, b) => (a.title || '').localeCompare(b.title || ''));
+    case 'rating_desc':
+      return sorted.sort((a, b) => (b.vote_average || 0) - (a.vote_average || 0));
+    case 'popularity_desc':
+    default:
+      return sorted.sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
+  }
+}
+
 export default function PersonDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [showAllCast, setShowAllCast] = useState(false);
   const [showAllCrew, setShowAllCrew] = useState(false);
+  const [castSortBy, setCastSortBy] = useState('popularity_desc');
+  const [crewSortBy, setCrewSortBy] = useState('popularity_desc');
 
   const {
     data: person,
@@ -96,8 +130,10 @@ export default function PersonDetail() {
   const hasCast = person.castCredits?.length > 0;
   const hasCrew = person.crewCredits?.length > 0;
   const INITIAL_SHOW = 10;
-  const visibleCast = showAllCast ? person.castCredits : person.castCredits?.slice(0, INITIAL_SHOW);
-  const visibleCrew = showAllCrew ? person.crewCredits : person.crewCredits?.slice(0, INITIAL_SHOW);
+  const sortedCastCredits = sortCredits(person.castCredits, castSortBy);
+  const sortedCrewCredits = sortCredits(person.crewCredits, crewSortBy);
+  const visibleCast = showAllCast ? sortedCastCredits : sortedCastCredits?.slice(0, INITIAL_SHOW);
+  const visibleCrew = showAllCrew ? sortedCrewCredits : sortedCrewCredits?.slice(0, INITIAL_SHOW);
 
   return (
     <div className="relative overflow-x-hidden">
@@ -230,13 +266,28 @@ export default function PersonDetail() {
           transition={{ duration: 0.5 }}
           className={`mt-12 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 ${!hasCrew ? 'pb-8' : ''}`}
         >
-          <div className="flex items-center gap-2 mb-6">
-            <Badge variant="secondary" className="gap-1">
-              <Film className="h-3 w-3" />
-              Actor
-            </Badge>
-            <h2 className="text-xl font-bold">Known For</h2>
-            <span className="text-sm text-muted-foreground">({person.castCredits.length})</span>
+          <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary" className="gap-1">
+                <Film className="h-3 w-3" />
+                Actor
+              </Badge>
+              <h2 className="text-xl font-bold">Known For</h2>
+              <span className="text-sm text-muted-foreground">({person.castCredits.length})</span>
+            </div>
+            <Select value={castSortBy} onValueChange={setCastSortBy}>
+              <SelectTrigger className="h-9 w-full text-xs sm:w-56">
+                <ArrowUpDown className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
+                <SelectValue placeholder="Sort credits" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="popularity_desc">Popularity (high to low)</SelectItem>
+                <SelectItem value="year_desc">Year (newest first)</SelectItem>
+                <SelectItem value="year_asc">Year (oldest first)</SelectItem>
+                <SelectItem value="rating_desc">Rating (highest first)</SelectItem>
+                <SelectItem value="title_asc">Title A-Z</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
             {visibleCast.map((movie) => (
@@ -262,13 +313,28 @@ export default function PersonDetail() {
           transition={{ duration: 0.5 }}
           className="mt-12 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-8"
         >
-          <div className="flex items-center gap-2 mb-6">
-            <Badge variant="secondary" className="gap-1">
-              <Clapperboard className="h-3 w-3" />
-              Director
-            </Badge>
-            <h2 className="text-xl font-bold">Directed</h2>
-            <span className="text-sm text-muted-foreground">({person.crewCredits.length})</span>
+          <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary" className="gap-1">
+                <Clapperboard className="h-3 w-3" />
+                Director
+              </Badge>
+              <h2 className="text-xl font-bold">Directed</h2>
+              <span className="text-sm text-muted-foreground">({person.crewCredits.length})</span>
+            </div>
+            <Select value={crewSortBy} onValueChange={setCrewSortBy}>
+              <SelectTrigger className="h-9 w-full text-xs sm:w-56">
+                <ArrowUpDown className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
+                <SelectValue placeholder="Sort credits" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="popularity_desc">Popularity (high to low)</SelectItem>
+                <SelectItem value="year_desc">Year (newest first)</SelectItem>
+                <SelectItem value="year_asc">Year (oldest first)</SelectItem>
+                <SelectItem value="rating_desc">Rating (highest first)</SelectItem>
+                <SelectItem value="title_asc">Title A-Z</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
             {visibleCrew.map((movie) => (
