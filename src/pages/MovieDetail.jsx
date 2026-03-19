@@ -134,6 +134,7 @@ export default function MovieDetail() {
   useEffect(() => {
     if (movie) addRecentlyViewed(movie);
   }, [movie, addRecentlyViewed]);
+  useEffect(() => {
     setShowAllCast(false);
   }, [movie?.id]);
 
