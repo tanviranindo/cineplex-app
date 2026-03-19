@@ -1,6 +1,6 @@
 const TOKEN = import.meta.env.VITE_TMDB_TOKEN
-const BASE = 'https://api.themoviedb.org/3'
-export const IMG_BASE = 'https://image.tmdb.org/t/p'
+const BASE = import.meta.env.VITE_TMDB_BASE_URL || 'https://api.themoviedb.org/3'
+export const IMG_BASE = import.meta.env.VITE_TMDB_IMG_BASE_URL || 'https://image.tmdb.org/t/p'
 
 const headers = {
   Authorization: `Bearer ${TOKEN}`,
