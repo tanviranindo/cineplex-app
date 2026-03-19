@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
@@ -18,14 +19,14 @@ import { getPersonById, profileUrl } from "../services/tmdb";
 import { usePageTitle } from "../hooks/usePageTitle";
 
 const PLACEHOLDER_PERSON =
-  "https://via.placeholder.com/300x450/1a1a2e/8b5cf6?text=No+Photo";
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='450' fill='%231a1a2e'%3E%3Crect width='300' height='450'/%3E%3Ctext x='150' y='225' text-anchor='middle' fill='%238b5cf6' font-size='16' font-family='sans-serif'%3ENo Photo%3C/text%3E%3C/svg%3E";
 
 function PersonSkeleton() {
   return (
     <div className="relative min-h-[calc(100vh-4rem)]">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         <div className="h-8 w-20 bg-muted rounded-full mb-6 animate-pulse" />
-        <div className="flex flex-col md:flex-row gap-8 lg:gap-12">
+        <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
           <div className="shrink-0 mx-auto md:mx-0">
             <div className="w-52 sm:w-64 aspect-[2/3] rounded-2xl bg-muted animate-pulse" />
           </div>
@@ -83,14 +84,20 @@ export default function PersonDetail() {
     );
   }
 
+  const [showAllCast, setShowAllCast] = useState(false);
+  const [showAllCrew, setShowAllCrew] = useState(false);
+
   const photo = profileUrl(person.profilePath, "h632") || PLACEHOLDER_PERSON;
   const age = calculateAge(person.birthday, person.deathday);
   const isDirector = person.department === "Directing";
   const hasCast = person.castCredits?.length > 0;
   const hasCrew = person.crewCredits?.length > 0;
+  const INITIAL_SHOW = 10;
+  const visibleCast = showAllCast ? person.castCredits : person.castCredits?.slice(0, INITIAL_SHOW);
+  const visibleCrew = showAllCrew ? person.crewCredits : person.crewCredits?.slice(0, INITIAL_SHOW);
 
   return (
-    <div className="relative pb-20 md:pb-0">
+    <div className="relative">
       {/* Ambient orbs */}
       <div className="ambient-orb w-96 h-96 bg-violet-500/10 -top-20 -right-40 animate-float" />
       <div className="ambient-orb w-64 h-64 bg-cyan-500/10 bottom-40 -left-32 animate-float-slow" />
@@ -113,13 +120,13 @@ export default function PersonDetail() {
           </Button>
         </motion.div>
 
-        <div className="flex flex-col md:flex-row gap-8 lg:gap-12">
+        <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
           {/* Photo */}
           <motion.div
             initial={{ opacity: 0, scale: 0.85 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            className="shrink-0 mx-auto md:mx-0"
+            className="shrink-0 mx-auto lg:mx-0"
           >
             <div className="relative">
               <div className="absolute -inset-4 bg-violet-500/20 rounded-3xl blur-3xl" />
@@ -220,7 +227,7 @@ export default function PersonDetail() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-50px" }}
           transition={{ duration: 0.5 }}
-          className="mt-12 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8"
+          className={`mt-12 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 ${!hasCrew ? "pb-8" : ""}`}
         >
           <div className="flex items-center gap-2 mb-6">
             <Badge variant="secondary" className="gap-1">
@@ -233,10 +240,17 @@ export default function PersonDetail() {
             </span>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
-            {person.castCredits.map((movie) => (
+            {visibleCast.map((movie) => (
               <MovieCard key={movie.id} movie={movie} />
             ))}
           </div>
+          {person.castCredits.length > INITIAL_SHOW && (
+            <div className="flex justify-center mt-6">
+              <Button variant="outline" onClick={() => setShowAllCast((s) => !s)}>
+                {showAllCast ? "Show Less" : `Show All ${person.castCredits.length} Credits`}
+              </Button>
+            </div>
+          )}
         </motion.div>
       )}
 
@@ -247,7 +261,7 @@ export default function PersonDetail() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-50px" }}
           transition={{ duration: 0.5 }}
-          className="mt-12 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-12"
+          className="mt-12 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-8"
         >
           <div className="flex items-center gap-2 mb-6">
             <Badge variant="secondary" className="gap-1">
@@ -260,10 +274,17 @@ export default function PersonDetail() {
             </span>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
-            {person.crewCredits.map((movie) => (
+            {visibleCrew.map((movie) => (
               <MovieCard key={`dir-${movie.id}`} movie={movie} />
             ))}
           </div>
+          {person.crewCredits.length > INITIAL_SHOW && (
+            <div className="flex justify-center mt-6">
+              <Button variant="outline" onClick={() => setShowAllCrew((s) => !s)}>
+                {showAllCrew ? "Show Less" : `Show All ${person.crewCredits.length} Credits`}
+              </Button>
+            </div>
+          )}
         </motion.div>
       )}
     </div>

@@ -1,5 +1,5 @@
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import {
@@ -29,7 +29,7 @@ import { usePreferencesStore } from "../stores/preferencesStore";
 import { queryKeys } from "../lib/queryKeys";
 
 const PLACEHOLDER =
-  "https://via.placeholder.com/300x450/1a1a2e/8b5cf6?text=No+Poster";
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='450' fill='%231a1a2e'%3E%3Crect width='300' height='450'/%3E%3Ctext x='150' y='225' text-anchor='middle' fill='%238b5cf6' font-size='16' font-family='sans-serif'%3ENo Poster%3C/text%3E%3C/svg%3E";
 
 // Deep-link mapping for major streaming providers (TMDB provider_id → base URL)
 const PROVIDER_URLS = {
@@ -77,11 +77,22 @@ export default function MovieDetail() {
     queryFn: () => getMovieById(id),
   });
 
-  const { data: similar } = useQuery({
+  const {
+    data: similarData,
+    fetchNextPage: fetchMoreSimilar,
+    hasNextPage: hasMoreSimilar,
+    isFetchingNextPage: fetchingSimilar,
+  } = useInfiniteQuery({
     queryKey: queryKeys.movies.similar(id),
-    queryFn: () => getSimilarMovies(id),
+    queryFn: ({ pageParam = 1 }) => getSimilarMovies(id, pageParam),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, allPages) => {
+      const next = allPages.length + 1;
+      return next <= Math.min(lastPage.totalPages, 3) ? next : undefined; // cap at 3 pages
+    },
     enabled: !!movie,
   });
+  const similar = similarData?.pages.flatMap((p) => p.results) ?? [];
 
   const { data: providers } = useQuery({
     queryKey: queryKeys.movies.providers(id),
@@ -203,13 +214,13 @@ export default function MovieDetail() {
           </Button>
         </motion.div>
 
-        <div className="flex flex-col md:flex-row gap-8 lg:gap-12">
+        <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
           {/* Poster */}
           <motion.div
             initial={{ opacity: 0, scale: 0.85, rotateY: -8 }}
             animate={{ opacity: 1, scale: 1, rotateY: 0 }}
             transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-            className="shrink-0 mx-auto md:mx-0"
+            className="shrink-0 mx-auto lg:mx-0"
           >
             <div className="relative">
               <div className="absolute -inset-4 bg-violet-500/20 rounded-3xl blur-3xl" />
@@ -525,8 +536,8 @@ export default function MovieDetail() {
         </div>
       </div>
 
-      {similar?.length > 0 && (
-        <div className="mt-16 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-24 md:pb-12">
+      {similar.length > 0 && (
+        <div className="mt-16 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
           <motion.h2
             initial={{ opacity: 0, x: -20 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -535,13 +546,22 @@ export default function MovieDetail() {
           >
             You Might Also Like
           </motion.h2>
-          <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 sm:overflow-visible sm:pb-0">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
             {similar.map((m, i) => (
-              <div key={m.id} className="shrink-0 w-36 sm:w-auto snap-start">
-                <MovieCard movie={m} index={i} />
-              </div>
+              <MovieCard key={m.id} movie={m} index={i} />
             ))}
           </div>
+          {hasMoreSimilar && (
+            <div className="flex justify-center mt-6">
+              <Button
+                variant="outline"
+                onClick={() => fetchMoreSimilar()}
+                disabled={fetchingSimilar}
+              >
+                {fetchingSimilar ? "Loading..." : "Show More"}
+              </Button>
+            </div>
+          )}
         </div>
       )}
 

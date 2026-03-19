@@ -80,7 +80,7 @@ export default function LoginModal() {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-sm">
+      <DialogContent className="max-w-[calc(100vw-2rem)] sm:max-w-sm">
         <DialogHeader>
           <div className="flex justify-center mb-2">
             <div className="p-3 rounded-xl bg-gradient-to-br from-violet-500 to-cyan-400">

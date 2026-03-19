@@ -54,7 +54,7 @@ function PosterStrip({ movies, reverse = false }) {
             to={`/movie/${movie.id}`}
             tabIndex={-1}
             aria-hidden="true"
-            className="shrink-0 w-24 sm:w-32 aspect-[2/3] rounded-lg overflow-hidden group"
+            className="shrink-0 w-28 sm:w-32 aspect-[2/3] rounded-lg overflow-hidden group"
           >
             {movie.poster_path ? (
               <img
@@ -158,7 +158,7 @@ export default function Home() {
 
             <motion.h1
               variants={item}
-              className="text-4xl sm:text-5xl lg:text-7xl font-extrabold tracking-tight leading-tight"
+              className="text-3xl sm:text-5xl lg:text-7xl font-extrabold tracking-tight leading-tight"
             >
               Your Personal{" "}
               <span className="gradient-text">Movie Watchlist</span>
@@ -309,7 +309,7 @@ export default function Home() {
       </section>
 
       {/* ── Features ── */}
-      <section className="relative py-20 pb-28 md:pb-20">
+      <section className="relative py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}

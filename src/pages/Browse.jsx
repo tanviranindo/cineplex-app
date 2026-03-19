@@ -178,7 +178,7 @@ function PersonSearch({ label, icon: Icon, onSelect, selectedPerson, onClear }) 
           <div
             data-person-dropdown
             className="fixed z-[100] rounded-lg border border-border bg-popover text-popover-foreground shadow-lg backdrop-blur-xl overflow-hidden"
-            style={{ top: dropdownPos.top, left: dropdownPos.left, width: dropdownPos.width }}
+            style={{ top: dropdownPos.top, left: dropdownPos.left, width: dropdownPos.width, maxHeight: `calc(100vh - ${dropdownPos.top}px - 16px)` }}
           >
             {isLoading ? (
               <div className="px-3 py-4 text-xs text-muted-foreground text-center">
@@ -235,7 +235,7 @@ export default function Browse() {
 
   const currentYear = new Date().getFullYear();
   const yearOptions = useMemo(
-    () => Array.from({ length: currentYear - 1999 }, (_, i) => currentYear - i),
+    () => Array.from({ length: currentYear - 1919 }, (_, i) => currentYear - i),
     [currentYear]
   );
 
@@ -318,7 +318,7 @@ export default function Browse() {
   ].filter(Boolean).length;
 
   return (
-    <div className="relative min-h-[calc(100vh-4rem)] pb-20 md:pb-0">
+    <div className="relative min-h-[calc(100vh-4rem)]">
       {/* Ambient orbs */}
       <div className="ambient-orb w-96 h-96 bg-violet-500/10 -top-20 -right-40 animate-float" />
       <div className="ambient-orb w-64 h-64 bg-cyan-500/10 bottom-40 -left-32 animate-float-slow" />
@@ -457,10 +457,10 @@ export default function Browse() {
             {advancedOpen && (
               <motion.div
                 initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1, overflow: "visible", transitionEnd: { overflow: "visible" } }}
+                exit={{ height: 0, opacity: 0, overflow: "hidden" }}
                 transition={{ duration: 0.25 }}
-                className="overflow-hidden"
+                style={{ overflow: "hidden" }}
               >
                 <div className="border-t border-border/50 pt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                   {/* Language */}

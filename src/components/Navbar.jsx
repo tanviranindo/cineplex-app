@@ -12,6 +12,7 @@ import {
   Menu,
   X,
   Settings,
+  Check,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "./ui/button";
@@ -151,15 +152,21 @@ export default function Navbar() {
                     <DropdownMenuSubContent>
                       <DropdownMenuItem
                         onClick={() => { if (theme !== "light") toggle(); }}
-                        className={theme === "light" ? "bg-accent" : ""}
+                        className="flex items-center justify-between"
                       >
-                        <Sun className="h-4 w-4 mr-2" /> Light
+                        <span className="flex items-center gap-2">
+                          <Sun className="h-4 w-4" /> Light
+                        </span>
+                        {theme === "light" && <Check className="h-3.5 w-3.5 text-primary" />}
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         onClick={() => { if (theme !== "dark") toggle(); }}
-                        className={theme === "dark" ? "bg-accent" : ""}
+                        className="flex items-center justify-between"
                       >
-                        <Moon className="h-4 w-4 mr-2" /> Dark
+                        <span className="flex items-center gap-2">
+                          <Moon className="h-4 w-4" /> Dark
+                        </span>
+                        {theme === "dark" && <Check className="h-3.5 w-3.5 text-primary" />}
                       </DropdownMenuItem>
                     </DropdownMenuSubContent>
                   </DropdownMenuSub>
@@ -264,7 +271,7 @@ export default function Navbar() {
                           <span className="text-[11px] font-bold text-white">{initials}</span>
                         </div>
                       )}
-                      <p className="text-sm text-muted-foreground">{user.name}</p>
+                      <p className="text-sm text-muted-foreground truncate max-w-[200px]">{user.name}</p>
                     </div>
                     <Link
                       to="/account"

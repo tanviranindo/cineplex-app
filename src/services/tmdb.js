@@ -83,9 +83,12 @@ export function getGenreNames(genreIds, genres) {
   return genreIds.map((id) => genres[id]).filter(Boolean)
 }
 
-export async function getSimilarMovies(movieId) {
-  const data = await tmdbFetch(`/movie/${movieId}/similar`)
-  return data.results?.slice(0, 6) || []
+export async function getSimilarMovies(movieId, page = 1) {
+  const data = await tmdbFetch(`/movie/${movieId}/similar?page=${page}`)
+  return {
+    results: data.results || [],
+    totalPages: data.total_pages || 1,
+  }
 }
 
 export async function discoverByGenre(genreId, page = 1) {

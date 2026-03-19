@@ -1,6 +1,7 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Film, Plus, Search, ArrowUpDown } from "lucide-react";
+import { Film, Plus, Search, ArrowUpDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "../components/ui/tabs";
@@ -66,6 +67,8 @@ const itemVariant = {
   show: { opacity: 1, x: 0, scale: 1, transition: { type: "spring", stiffness: 300, damping: 24 } },
 };
 
+const ITEMS_PER_PAGE = 20;
+
 export default function Watchlist() {
   usePageTitle("My Watchlist");
   const items = useWatchlistStore((s) => s.items);
@@ -73,6 +76,7 @@ export default function Watchlist() {
   const sortBy = usePreferencesStore((s) => s.watchlistSort);
   const setActiveTab = usePreferencesStore((s) => s.setWatchlistTab);
   const setSortBy = usePreferencesStore((s) => s.setWatchlistSort);
+  const [page, setPage] = useState(1);
 
   // Global empty state
   if (items.length === 0) {
@@ -86,7 +90,7 @@ export default function Watchlist() {
           <div className="mx-auto mb-6 w-20 h-20 rounded-2xl bg-muted/50 flex items-center justify-center">
             <Film className="h-10 w-10 text-muted-foreground/50" />
           </div>
-          <h2 className="text-2xl font-bold mb-2">Your watchlist is empty</h2>
+          <h2 className="text-xl sm:text-2xl font-bold mb-2">Your watchlist is empty</h2>
           <p className="text-muted-foreground mb-8">
             Start adding movies to keep track of what you want to watch next.
           </p>
@@ -117,10 +121,17 @@ export default function Watchlist() {
           if (activeTab === "to_watch") return m.status === "to_watch" || !m.status;
           return m.status === TAB_STATUS[activeTab];
         });
-  const displayed = sortItems(filtered, sortBy);
+  const allSorted = sortItems(filtered, sortBy);
+  const totalPages = Math.ceil(allSorted.length / ITEMS_PER_PAGE);
+  const safePage = Math.min(page, totalPages || 1);
+  const displayed = allSorted.slice((safePage - 1) * ITEMS_PER_PAGE, safePage * ITEMS_PER_PAGE);
+  const needsPagination = allSorted.length > ITEMS_PER_PAGE;
+
+  const handleTabChange = (tab) => { setActiveTab(tab); setPage(1); };
+  const handleSortChange = (sort) => { setSortBy(sort); setPage(1); };
 
   return (
-    <div className="relative min-h-[calc(100vh-4rem)] pb-20 md:pb-0">
+    <div className="relative min-h-[calc(100vh-4rem)]">
       <div className="ambient-orb w-80 h-80 bg-violet-500/10 -top-20 -right-40 animate-float" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -141,7 +152,7 @@ export default function Watchlist() {
           </div>
           <div className="flex items-center gap-3">
             {/* Sort */}
-            <Select value={sortBy} onValueChange={setSortBy}>
+            <Select value={sortBy} onValueChange={handleSortChange}>
               <SelectTrigger className="w-44 h-9 text-sm">
                 <ArrowUpDown className="h-3.5 w-3.5 mr-2 text-muted-foreground" />
                 <SelectValue placeholder="Sort by" />
@@ -163,7 +174,7 @@ export default function Watchlist() {
         </motion.div>
 
         {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-8">
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="mb-8">
           <TabsList className="glass">
             {Object.keys(TAB_LABELS).map((tab) => (
               <TabsTrigger key={tab} value={tab} className="gap-1.5">
@@ -207,6 +218,33 @@ export default function Watchlist() {
               </motion.div>
             ))}
           </motion.div>
+        )}
+
+        {/* Pagination */}
+        {needsPagination && displayed.length > 0 && (
+          <div className="flex items-center justify-center gap-3 mt-8">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => { setPage((p) => Math.max(1, p - 1)); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+              disabled={safePage <= 1}
+            >
+              <ChevronLeft className="h-4 w-4 mr-1" />
+              Previous
+            </Button>
+            <span className="text-sm text-muted-foreground">
+              Page {safePage} of {totalPages}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => { setPage((p) => Math.min(totalPages, p + 1)); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+              disabled={safePage >= totalPages}
+            >
+              Next
+              <ChevronRight className="h-4 w-4 ml-1" />
+            </Button>
+          </div>
         )}
       </div>
     </div>

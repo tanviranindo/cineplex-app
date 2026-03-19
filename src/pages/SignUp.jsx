@@ -79,7 +79,7 @@ export default function SignUp() {
         transition={{ duration: reducedMotion ? 0 : 0.5, ease: [0.22, 1, 0.36, 1] }}
         className="w-full max-w-md relative"
       >
-        <div className="glass rounded-2xl p-8 card-glow">
+        <div className="glass rounded-2xl p-6 sm:p-8 card-glow">
           {/* Icon */}
           <div className="flex justify-center mb-6">
             <motion.div
@@ -90,9 +90,9 @@ export default function SignUp() {
                   ? { duration: 0 }
                   : { type: "spring", stiffness: 260, damping: 20, delay: 0.1 }
               }
-              className="p-4 rounded-2xl bg-gradient-to-br from-violet-500 to-cyan-400 shadow-lg shadow-violet-500/25"
+              className="p-3 sm:p-4 rounded-2xl bg-gradient-to-br from-violet-500 to-cyan-400 shadow-lg shadow-violet-500/25"
             >
-              <Film className="h-8 w-8 text-white" />
+              <Film className="h-7 w-7 sm:h-8 sm:w-8 text-white" />
             </motion.div>
           </div>
 

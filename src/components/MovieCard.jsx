@@ -148,7 +148,7 @@ export default function MovieCard({ movie, index = 0, showRemove = false, addedA
             </div>
 
             <div className="p-4 space-y-3">
-              <h3 className="font-semibold text-sm leading-snug line-clamp-2 min-h-[2.5rem] group-hover:text-primary transition-colors duration-300">
+              <h3 className="font-semibold text-xs sm:text-sm leading-snug line-clamp-2 min-h-[2rem] sm:min-h-[2.5rem] group-hover:text-primary transition-colors duration-300">
                 {title}
               </h3>
 
